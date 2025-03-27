@@ -13,7 +13,7 @@ interface BillInfoType {
   doctorName: string;
   address: string;
   mobile: string;
-  mode: 'CREDIT' | 'CASH';
+  mode: 'CREDIT' | 'CASH/ONLINE';
   deliveredBy: string;
   salesPerson: string;
   code: string;
@@ -286,7 +286,7 @@ export default function BillGenerator() {
             className="w-full p-2 border rounded"
           >
             <option value="CREDIT">CREDIT</option>
-            <option value="CASH">CASH</option>
+            <option value="CASH/ONLINE">CASH/ONLINE</option>
           </select>
         </div>
         <div>
@@ -488,7 +488,7 @@ export default function BillGenerator() {
         <h2 className="text-xl font-bold mb-4">Bill Preview</h2>
         <div className="border p-4" ref={componentRef}>
           <div className="mb-4">
-            <h1 className="text-2xl font-bold text-center">Medivax Pharma</h1>
+            <h1 className="text-[36px] font-bold text-center">Medivax Pharma</h1>
             <div className="flex justify-between mt-2">
               <div className="text-left">
                 <p><strong>GST NO:</strong> {billInfo.gstNo}</p>
@@ -564,7 +564,7 @@ export default function BillGenerator() {
           <div>
             <p><strong>{numberToWords(calculateTotal())}</strong></p>
             <p className="mt-4">Please Consult with your Dr. Before Using The Medicines.</p>
-            <p>Fridge Items Once Sold Can&apos;t Be Taken Back due to technical reasons.</p>
+            <p>Cold Chain Items Once Sold Can&apos;t Be Taken Back due to technical reasons.</p>
             <p>All Disputes are Subject to KOLKATA Jurisdiction Only.</p>
             <div className="text-right mt-4">
               <p>For Medivax Pharma</p>
