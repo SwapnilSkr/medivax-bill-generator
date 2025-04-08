@@ -773,38 +773,158 @@ export default function BillGenerator() {
             </div>
           </div>
 
-          <table className="w-full border-collapse text-sm mt-8">
+          <table className="w-full table-fixed border-collapse text-sm mt-8">
             <thead>
               <tr className="bg-gray-400">
-                <th className="border border-black p-1 text-xs">Sr.</th>
-                <th className="border border-black p-1 text-xs">DESCRIPTION</th>
-                <th className="border border-black p-1 text-xs">HSN</th>
-                <th className="border border-black p-1 text-xs">MFG</th>
-                <th className="border border-black p-1 text-xs">QTY</th>
-                <th className="border border-black p-1 text-xs">UNIT</th>
-                <th className="border border-black p-1 text-xs">BATCH</th>
-                <th className="border border-black p-1 text-xs">EXP.</th>
-                <th className="border border-black p-1 text-xs">MRP</th>
-                <th className="border border-black p-1 text-xs">DISC</th>
-                <th className="border border-black p-1 text-xs">RATE</th>
-                <th className="border border-black p-1 text-xs">AMOUNT</th>
+                <th className="border border-black p-1 text-xs w-[4%] align-top">Sr.</th>
+                <th className="border border-black p-1 text-xs w-[25%] align-top">DESCRIPTION</th>
+                <th className="border border-black p-1 text-xs w-[8%] align-top">HSN</th>
+                <th className="border border-black p-1 text-xs w-[8%] align-top">MFG</th>
+                <th className="border border-black p-1 text-xs w-[5%] align-top">QTY</th>
+                <th className="border border-black p-1 text-xs w-[5%] align-top">UNIT</th>
+                <th className="border border-black p-1 text-xs w-[10%] align-top">BATCH</th>
+                <th className="border border-black p-1 text-xs w-[10%] align-top">EXP.</th>
+                <th className="border border-black p-1 text-xs w-[7%] align-top">MRP</th>
+                <th className="border border-black p-1 text-xs w-[6%] align-top">DISC</th>
+                <th className="border border-black p-1 text-xs w-[6%] align-top">RATE</th>
+                <th className="border border-black p-1 text-xs w-[6%] align-top">AMOUNT</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item, index) => (
                 <tr key={item.id} className="text-xs">
-                  <td className="border border-black p-1">{index + 1}</td>
-                  <td className="border border-black p-1">{item.description}</td>
-                  <td className="border border-black p-1">{item.hsn}</td>
-                  <td className="border border-black p-1">{item.mfg}</td>
-                  <td className="border border-black p-1">{item.qty}</td>
-                  <td className="border border-black p-1">{item.unit}</td>
-                  <td className="border border-black p-1">{item.batch}</td>
-                  <td className="border border-black p-1">{item.exp}</td>
-                  <td className="border border-black p-1">{item.mrp}</td>
-                  <td className="border border-black p-1">{item.disc}</td>
-                  <td className="border border-black p-1">{item.rate}</td>
-                  <td className="border border-black p-1">{item.amount?.toFixed(2) || ""}</td>
+                  <td className="border border-black p-1 text-center align-top">{index + 1}</td>
+                  <td className="border border-black p-1 align-top">
+                    <textarea
+                      value={item.description}
+                      onChange={(e) =>
+                        handleItemChange(index, "description", e.target.value)
+                      }
+                      className="w-full bg-transparent focus:outline-none resize-none overflow-hidden whitespace-pre-wrap"
+                      rows={1}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = target.scrollHeight + 'px';
+                      }}
+                    />
+                  </td>
+                  <td className="border border-black p-1 align-top">
+                    <textarea
+                      value={item.hsn}
+                      onChange={(e) =>
+                        handleItemChange(index, "hsn", e.target.value)
+                      }
+                      className="w-full bg-transparent focus:outline-none resize-none overflow-hidden whitespace-pre-wrap"
+                      rows={1}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = target.scrollHeight + 'px';
+                      }}
+                    />
+                  </td>
+                  <td className="border border-black p-1 align-top">
+                    <textarea
+                      value={item.mfg}
+                      onChange={(e) =>
+                        handleItemChange(index, "mfg", e.target.value)
+                      }
+                      className="w-full bg-transparent focus:outline-none resize-none overflow-hidden whitespace-pre-wrap"
+                      rows={1}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = target.scrollHeight + 'px';
+                      }}
+                    />
+                  </td>
+                  <td className="border border-black p-1 align-top">
+                    <input
+                      type="number"
+                      value={item.qty ?? ''}
+                      onChange={(e) =>
+                        handleItemChange(index, "qty", e.target.value)
+                      }
+                      className="w-full bg-transparent focus:outline-none"
+                    />
+                  </td>
+                  <td className="border border-black p-1 align-top">
+                    <textarea
+                      value={item.unit}
+                      onChange={(e) =>
+                        handleItemChange(index, "unit", e.target.value)
+                      }
+                      className="w-full bg-transparent focus:outline-none resize-none overflow-hidden whitespace-pre-wrap"
+                      rows={1}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = target.scrollHeight + 'px';
+                      }}
+                    />
+                  </td>
+                  <td className="border border-black p-1 align-top">
+                    <textarea
+                      value={item.batch}
+                      onChange={(e) =>
+                        handleItemChange(index, "batch", e.target.value)
+                      }
+                      className="w-full bg-transparent focus:outline-none resize-none overflow-hidden whitespace-pre-wrap"
+                      rows={1}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = target.scrollHeight + 'px';
+                      }}
+                    />
+                  </td>
+                  <td className="border border-black p-1 align-top">
+                    <textarea
+                      value={item.exp}
+                      onChange={(e) =>
+                        handleItemChange(index, "exp", e.target.value)
+                      }
+                      className="w-full bg-transparent focus:outline-none resize-none overflow-hidden whitespace-pre-wrap"
+                      rows={1}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = target.scrollHeight + 'px';
+                      }}
+                    />
+                  </td>
+                  <td className="border border-black p-1 align-top">
+                    <input
+                      type="number"
+                      value={item.mrp ?? ''}
+                      onChange={(e) =>
+                        handleItemChange(index, "mrp", e.target.value)
+                      }
+                      className="w-full bg-transparent focus:outline-none"
+                    />
+                  </td>
+                  <td className="border border-black p-1 align-top">
+                    <input
+                      type="number"
+                      value={item.disc ?? ''}
+                      onChange={(e) =>
+                        handleItemChange(index, "disc", e.target.value)
+                      }
+                      className="w-full bg-transparent focus:outline-none"
+                    />
+                  </td>
+                  <td className="border border-black p-1 align-top">
+                    <input
+                      type="number"
+                      value={item.rate ?? ''}
+                      onChange={(e) =>
+                        handleItemChange(index, "rate", e.target.value)
+                      }
+                      className="w-full bg-transparent focus:outline-none"
+                    />
+                  </td>
+                  <td className="border border-black p-1 text-right align-top">{item.amount?.toFixed(2) || ""}</td>
                 </tr>
               ))}
             </tbody>
@@ -821,7 +941,7 @@ export default function BillGenerator() {
                 <td colSpan={11} className="border border-black p-1 text-right">
                   <strong>Total Pay(Rs.):</strong>
                 </td>
-                <td className="border border-black p-1">
+                <td className="border border-black p-1 text-right whitespace-normal break-words">
                   <strong>{calculateTotal().toFixed(2)}</strong>
                 </td>
               </tr>
