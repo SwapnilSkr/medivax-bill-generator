@@ -574,109 +574,143 @@ export default function BillGenerator() {
 
       <div className="mt-8">
         <h2 className="text-xl font-bold mb-4">Bill Preview</h2>
-        <div className="border p-2 max-w-[210mm] mx-auto" ref={componentRef}>
+        <div className="border px-[100px] py-2" ref={componentRef}>
           <div className="mb-2">
             <div className="flex flex-col justify-center">
-              <h1 className="text-[20px] font-bold text-center">
+              <h1 className="text-[24px] font-bold text-center">
                 Medivax Pharma
               </h1>
-              <p className="text-center text-[11px]">
+              <p className="text-center text-[13px]">
                 14 DR. RAJKUMAR KUNDU LANE, SHIBTALA, HOWRAH - 711102
               </p>
             </div>
-            <div className="flex justify-between mt-1 text-[11px]">
+            <div className="flex justify-between mt-1 text-sm">
               <div className="text-left">
-                <p><strong>GST NO:</strong> {billInfo.gstNo}</p>
-                <p><strong>MOBILE:</strong> 8777219601 / 7980076433</p>
-                <p><strong>DL NO:</strong> 2246-SBW, 2298-SW</p>
+                <p>
+                  <strong>GST NO:</strong> {billInfo.gstNo}
+                </p>
+                <p>
+                  <strong>MOBILE:</strong> 8777219601 / 7980076433
+                </p>
+                <p>
+                  <strong>DL NO:</strong> 2246-SBW, 2298-SW
+                </p>
               </div>
               <div className="text-right">
-                <p><strong>Bill No.:</strong> {billInfo.billNo}</p>
-                <p><strong>Bill Date:</strong> {new Date(billInfo.billDate).toLocaleDateString()}</p>
-                <p><strong>Bill Time:</strong> {billInfo.billTime}</p>
-                <p><strong>Order Date:</strong> {new Date(billInfo.billDate).toLocaleDateString()}</p>
+                <p>
+                  <strong>Bill No.:</strong> {billInfo.billNo}
+                </p>
+                <p>
+                  <strong>Bill Date:</strong>{" "}
+                  {new Date(billInfo.billDate).toLocaleDateString()}
+                </p>
+                <p>
+                  <strong>Bill Time:</strong> {billInfo.billTime}
+                </p>
+                <p>
+                  <strong>Order Date:</strong>{" "}
+                  {new Date(billInfo.billDate).toLocaleDateString()}
+                </p>
               </div>
             </div>
-            <div className="text-left mt-1 text-[11px]">
-              <p><strong>Name:</strong> {billInfo.doctorName}</p>
-              <p><strong>Address:</strong> {billInfo.address}</p>
-              <p><strong>Mobile:</strong> {billInfo.mobile}</p>
-              <p><strong>MODE:</strong> {billInfo.mode}</p>
-              <p><strong>Delivered By:</strong> {billInfo.deliveredBy}</p>
-              <p><strong>Sales Person:</strong> {billInfo.salesPerson}</p>
+            <div className="text-left mt-1 text-sm">
+              <p>
+                <strong>Name:</strong> {billInfo.doctorName}
+              </p>
+              <p>
+                <strong>Address:</strong> {billInfo.address}
+              </p>
+              <p>
+                <strong>Mobile:</strong> {billInfo.mobile}
+              </p>
+              <p>
+                <strong>MODE:</strong> {billInfo.mode}
+              </p>
+              <p>
+                <strong>Delivered By:</strong> {billInfo.deliveredBy}
+              </p>
+              <p>
+                <strong>Sales Person:</strong> {billInfo.salesPerson}
+              </p>
             </div>
           </div>
-          
-          <table className="w-full border-collapse text-[10px]">
+
+          <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border p-0.5 w-[3%]">Sr.</th>
-                <th className="border p-0.5 w-[20%]">DESCRIPTION</th>
-                <th className="border p-0.5 w-[8%]">HSN</th>
-                <th className="border p-0.5 w-[8%]">MFG</th>
-                <th className="border p-0.5 w-[5%]">QTY</th>
-                <th className="border p-0.5 w-[5%]">UNIT</th>
-                <th className="border p-0.5 w-[8%]">BATCH</th>
-                <th className="border p-0.5 w-[8%]">EXP.</th>
-                <th className="border p-0.5 w-[8%]">MRP</th>
-                <th className="border p-0.5 w-[8%]">DISC</th>
-                <th className="border p-0.5 w-[8%]">RATE</th>
-                <th className="border p-0.5 w-[8%]">AMOUNT</th>
+                <th className="border p-1 text-xs">Sr.</th>
+                <th className="border p-1 text-xs">DESCRIPTION</th>
+                <th className="border p-1 text-xs">HSN</th>
+                <th className="border p-1 text-xs">MFG</th>
+                <th className="border p-1 text-xs">QTY</th>
+                <th className="border p-1 text-xs">UNIT</th>
+                <th className="border p-1 text-xs">BATCH</th>
+                <th className="border p-1 text-xs">EXP.</th>
+                <th className="border p-1 text-xs">MRP</th>
+                <th className="border p-1 text-xs">DISC</th>
+                <th className="border p-1 text-xs">RATE</th>
+                <th className="border p-1 text-xs">AMOUNT</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item, index) => (
-                <tr key={item.id} className="text-[10px]">
-                  <td className="border p-0.5">{index + 1}</td>
-                  <td className="border p-0.5">{item.description}</td>
-                  <td className="border p-0.5">{item.hsn}</td>
-                  <td className="border p-0.5">{item.mfg}</td>
-                  <td className="border p-0.5">{item.qty}</td>
-                  <td className="border p-0.5">{item.unit}</td>
-                  <td className="border p-0.5">{item.batch}</td>
-                  <td className="border p-0.5">{item.exp}</td>
-                  <td className="border p-0.5">{item.mrp}</td>
-                  <td className="border p-0.5">{item.disc}</td>
-                  <td className="border p-0.5">{item.rate}</td>
-                  <td className="border p-0.5">{item.amount.toFixed(2)}</td>
+                <tr key={item.id} className="text-xs">
+                  <td className="border p-1">{index + 1}</td>
+                  <td className="border p-1">{item.description}</td>
+                  <td className="border p-1">{item.hsn}</td>
+                  <td className="border p-1">{item.mfg}</td>
+                  <td className="border p-1">{item.qty}</td>
+                  <td className="border p-1">{item.unit}</td>
+                  <td className="border p-1">{item.batch}</td>
+                  <td className="border p-1">{item.exp}</td>
+                  <td className="border p-1">{item.mrp}</td>
+                  <td className="border p-1">{item.disc}</td>
+                  <td className="border p-1">{item.rate}</td>
+                  <td className="border p-1">{item.amount.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
-            <tfoot className="text-[10px]">
+            <tfoot className="text-xs">
               <tr>
-                <td colSpan={11} className="border p-0.5 text-right">
+                <td colSpan={11} className="border p-1 text-right">
                   <strong>ITEMS: {items.length}</strong>
                 </td>
-                <td className="border p-0.5">
+                <td className="border p-1">
                   <strong>QTY: {calculateTotalItems()}</strong>
                 </td>
               </tr>
               <tr>
-                <td colSpan={11} className="border p-0.5 text-right">
+                <td colSpan={11} className="border p-1 text-right">
                   <strong>Total Pay(Rs.):</strong>
                 </td>
-                <td className="border p-0.5">
+                <td className="border p-1">
                   <strong>{calculateTotal().toFixed(2)}</strong>
                 </td>
               </tr>
             </tfoot>
           </table>
-          
-          <div className="text-[10px] mt-2">
-            <p><strong>{numberToWords(calculateTotal())}</strong></p>
-            <div className="mt-1 space-y-0.5">
+
+          <div className="text-xs mt-2">
+            <p>
+              <strong>{numberToWords(calculateTotal())}</strong>
+            </p>
+            <div className="mt-2 space-y-0.5">
               <p>Please Consult with your Dr. Before Using The Medicines.</p>
-              <p>Cold Chain Items Once Sold Can&apos;t Be Taken Back due to technical reasons.</p>
+              <p>
+                Cold Chain Items Once Sold Can&apos;t Be Taken Back due to
+                technical reasons.
+              </p>
               <p>All Disputes are Subject to KOLKATA Jurisdiction Only.</p>
             </div>
-            <div className="text-right mt-1">
+            <div className="text-right mt-2">
               <p>For Medivax Pharma</p>
               <p>E.& O.E.</p>
             </div>
-            <p className="mt-1">
-              KOTAK MAHINDRA BANK, A/c No.-9314146480, IFS CODE: KKBK0000322, Park Street, Kolkata-700016
+            <p className="mt-2">
+              KOTAK MAHINDRA BANK, A/c No.-9314146480, IFS CODE: KKBK0000322,
+              Park Street, Kolkata-700016
             </p>
-            <span className="text-left text-[9px]">
+            <span className="text-left text-[12px]">
               Done in partnership with HRISHIKESH ENTERPRISE
             </span>
           </div>
