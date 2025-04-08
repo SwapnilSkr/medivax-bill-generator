@@ -712,7 +712,7 @@ export default function BillGenerator() {
 
       <div className="mt-2">
         <h2 className="text-xl font-bold mb-4">Bill Preview</h2>
-        <div className="border px-[100px] py-2" ref={componentRef}>
+        <div className="border px-[70px] py-2" ref={componentRef}>
           <div className="mb-2">
             <div className="flex flex-col justify-center">
               <h1 className="text-[24px] font-bold text-center">
@@ -777,13 +777,13 @@ export default function BillGenerator() {
             <thead>
               <tr className="bg-gray-400">
                 <th className="border border-black p-1 text-xs w-[4%] align-top">Sr.</th>
-                <th className="border border-black p-1 text-xs w-[20%] align-top">DESCRIPTION</th>
-                <th className="border border-black p-1 text-xs w-[8%] align-top">HSN</th>
+                <th className="border border-black p-1 text-xs w-[15%] align-top">DESCRIPTION</th>
+                <th className="border border-black p-1 text-xs w-[10%] align-top">HSN</th>
                 <th className="border border-black p-1 text-xs w-[8%] align-top">MFG</th>
-                <th className="border border-black p-1 text-xs w-[4%] align-top">QTY</th>
-                <th className="border border-black p-1 text-xs w-[6%] align-top">UNIT</th>
+                <th className="border border-black p-1 text-xs w-[7%] align-top">QTY</th>
+                <th className="border border-black p-1 text-xs w-[7%] align-top">UNIT</th>
                 <th className="border border-black p-1 text-xs w-[10%] align-top">BATCH</th>
-                <th className="border border-black p-1 text-xs w-[10%] align-top">EXP.</th>
+                <th className="border border-black p-1 text-xs w-[8%] align-top">EXP.</th>
                 <th className="border border-black p-1 text-xs w-[7%] align-top">MRP</th>
                 <th className="border border-black p-1 text-xs w-[6%] align-top">DISC</th>
                 <th className="border border-black p-1 text-xs w-[6%] align-top">RATE</th>
