@@ -637,7 +637,7 @@ export default function BillGenerator() {
 
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="bg-gray-100">
+              <tr className="bg-gray-400">
                 <th className="border p-1 text-xs">Sr.</th>
                 <th className="border p-1 text-xs">DESCRIPTION</th>
                 <th className="border p-1 text-xs">HSN</th>
