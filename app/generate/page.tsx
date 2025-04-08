@@ -780,8 +780,8 @@ export default function BillGenerator() {
                 <th className="border border-black p-1 text-xs w-[20%] align-top">DESCRIPTION</th>
                 <th className="border border-black p-1 text-xs w-[8%] align-top">HSN</th>
                 <th className="border border-black p-1 text-xs w-[8%] align-top">MFG</th>
-                <th className="border border-black p-1 text-xs w-[5%] align-top">QTY</th>
-                <th className="border border-black p-1 text-xs w-[5%] align-top">UNIT</th>
+                <th className="border border-black p-1 text-xs w-[4%] align-top">QTY</th>
+                <th className="border border-black p-1 text-xs w-[6%] align-top">UNIT</th>
                 <th className="border border-black p-1 text-xs w-[10%] align-top">BATCH</th>
                 <th className="border border-black p-1 text-xs w-[10%] align-top">EXP.</th>
                 <th className="border border-black p-1 text-xs w-[7%] align-top">MRP</th>
