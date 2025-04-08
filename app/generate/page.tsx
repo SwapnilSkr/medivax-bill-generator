@@ -23,14 +23,14 @@ interface ItemType {
   description: string;
   hsn: string;
   mfg: string;
-  qty: number;
+  qty: number | null;
   unit: string;
   batch: string;
   exp: string;
-  mrp: number;
-  disc: number;
-  rate: number;
-  amount: number;
+  mrp: number | null;
+  disc: number | null;
+  rate: number | null;
+  amount: number | null;
 }
 
 export default function BillGenerator() {
@@ -69,14 +69,140 @@ export default function BillGenerator() {
       description: "",
       hsn: "",
       mfg: "",
-      qty: 0,
+      qty: null as unknown as number,
       unit: "",
       batch: "",
       exp: "",
-      mrp: 0,
-      disc: 0,
-      rate: 0,
-      amount: 0,
+      mrp: null as unknown as number,
+      disc: null as unknown as number,
+      rate: null as unknown as number,
+      amount: null as unknown as number,
+    },
+    {
+      id: 2,
+      description: "",
+      hsn: "",
+      mfg: "",
+      qty: null as unknown as number,
+      unit: "",
+      batch: "",
+      exp: "",
+      mrp: null as unknown as number,
+      disc: null as unknown as number,
+      rate: null as unknown as number,
+      amount: null as unknown as number,
+    },
+    {
+      id: 3,
+      description: "",
+      hsn: "",
+      mfg: "",
+      qty: null as unknown as number,
+      unit: "",
+      batch: "",
+      exp: "",
+      mrp: null as unknown as number,
+      disc: null as unknown as number,
+      rate: null as unknown as number,
+      amount: null as unknown as number,
+    },
+    {
+      id: 4,
+      description: "",
+      hsn: "",
+      mfg: "",
+      qty: null as unknown as number,
+      unit: "",
+      batch: "",
+      exp: "",
+      mrp: null as unknown as number,
+      disc: null as unknown as number,
+      rate: null as unknown as number,
+      amount: null as unknown as number,
+    },
+    {
+      id: 5,
+      description: "",
+      hsn: "",
+      mfg: "",
+      qty: null as unknown as number,
+      unit: "",
+      batch: "",
+      exp: "",
+      mrp: null as unknown as number,
+      disc: null as unknown as number,
+      rate: null as unknown as number,
+      amount: null as unknown as number,
+    },
+    {
+      id: 6,
+      description: "",
+      hsn: "",
+      mfg: "",
+      qty: null as unknown as number,
+      unit: "",
+      batch: "",
+      exp: "",
+      mrp: null as unknown as number,
+      disc: null as unknown as number,
+      rate: null as unknown as number,
+      amount: null as unknown as number,
+    },
+    {
+      id: 7,
+      description: "",
+      hsn: "",
+      mfg: "",
+      qty: null as unknown as number,
+      unit: "",
+      batch: "",
+      exp: "",
+      mrp: null as unknown as number,
+      disc: null as unknown as number,
+      rate: null as unknown as number,
+      amount: null as unknown as number,
+    },
+    {
+      id: 8,
+      description: "",
+      hsn: "",
+      mfg: "",
+      qty: null as unknown as number,
+      unit: "",
+      batch: "",
+      exp: "",
+      mrp: null as unknown as number,
+      disc: null as unknown as number,
+      rate: null as unknown as number,
+      amount: null as unknown as number,
+    },
+    {
+      id: 9,
+      description: "",
+      hsn: "",
+      mfg: "",
+      qty: null as unknown as number,
+      unit: "",
+      batch: "",
+      exp: "",
+      mrp: null as unknown as number,
+      disc: null as unknown as number,
+      rate: null as unknown as number,
+      amount: null as unknown as number,
+    },
+    {
+      id: 10,
+      description: "",
+      hsn: "",
+      mfg: "",
+      qty: null as unknown as number,
+      unit: "",
+      batch: "",
+      exp: "",
+      mrp: null as unknown as number,
+      disc: null as unknown as number,
+      rate: null as unknown as number,
+      amount: null as unknown as number,
     },
   ]);
 
@@ -100,14 +226,14 @@ export default function BillGenerator() {
       field === "rate"
     ) {
       newItems[index][field] =
-        typeof value === "string" ? parseFloat(value) || 0 : value;
+        typeof value === "string" ? parseFloat(value) || null : value;
     } else {
       newItems[index][field as keyof ItemType] = value as never;
     }
     if (field === "rate" || field === "qty") {
       const rate = newItems[index].rate || 0;
       const qty = newItems[index].qty || 0;
-      newItems[index].amount = rate * qty;
+      newItems[index].amount = rate && qty ? rate * qty : null;
     }
     setItems(newItems);
   };
@@ -133,17 +259,27 @@ export default function BillGenerator() {
   };
 
   const removeItem = (index: number) => {
-    const newItems = [...items];
-    newItems.splice(index, 1);
-    setItems(newItems);
+    if (items.length > 10) {
+      const newItems = [...items];
+      newItems.splice(index, 1);
+      setItems(newItems);
+    }
   };
 
   const calculateTotal = (): number => {
-    return items.reduce((total, item) => total + item.amount, 0);
+    return items.reduce((total, item) => {
+      return total + (item.amount !== null ? item.amount : 0);
+    }, 0);
   };
 
   const calculateTotalItems = (): number => {
-    return items.reduce((total, item) => total + (item.qty || 0), 0);
+    return items.reduce((total, item) => {
+      return total + (item.qty !== null ? item.qty : 0);
+    }, 0);
+  };
+
+  const getActiveItemCount = (): number => {
+    return items.filter(item => item.qty !== null || item.description !== "").length;
   };
 
   const componentRef = useRef<HTMLDivElement>(null);
@@ -439,7 +575,7 @@ export default function BillGenerator() {
                   <td className="border p-2">
                     <input
                       type="number"
-                      value={item.qty}
+                      value={item.qty ?? ''}
                       onChange={(e) =>
                         handleItemChange(index, "qty", e.target.value)
                       }
@@ -479,7 +615,7 @@ export default function BillGenerator() {
                   <td className="border p-2">
                     <input
                       type="number"
-                      value={item.mrp}
+                      value={item.mrp ?? ''}
                       onChange={(e) =>
                         handleItemChange(index, "mrp", e.target.value)
                       }
@@ -489,7 +625,7 @@ export default function BillGenerator() {
                   <td className="border p-2">
                     <input
                       type="number"
-                      value={item.disc}
+                      value={item.disc ?? ''}
                       onChange={(e) =>
                         handleItemChange(index, "disc", e.target.value)
                       }
@@ -499,21 +635,23 @@ export default function BillGenerator() {
                   <td className="border p-2">
                     <input
                       type="number"
-                      value={item.rate}
+                      value={item.rate ?? ''}
                       onChange={(e) =>
                         handleItemChange(index, "rate", e.target.value)
                       }
                       className="w-full p-1 border"
                     />
                   </td>
-                  <td className="border p-2">{item.amount.toFixed(2)}</td>
+                  <td className="border p-2">{item.amount?.toFixed(2) || ""}</td>
                   <td className="border p-2">
-                    <button
-                      onClick={() => removeItem(index)}
-                      className="bg-[#ef4444] text-white px-2 py-1 rounded hover:bg-[#dc2626]"
-                    >
-                      Remove
-                    </button>
+                    {items.length > 10 && (
+                      <button
+                        onClick={() => removeItem(index)}
+                        className="bg-[#ef4444] text-white px-2 py-1 rounded hover:bg-[#dc2626]"
+                      >
+                        Remove
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -531,7 +669,7 @@ export default function BillGenerator() {
       <div className="mb-6 flex justify-between items-center">
         <div>
           <p>
-            <strong>Total Items:</strong> {items.length}
+            <strong>Total Items:</strong> {getActiveItemCount()}
           </p>
           <p>
             <strong>Total Quantity:</strong> {calculateTotalItems()}
@@ -635,55 +773,55 @@ export default function BillGenerator() {
             </div>
           </div>
 
-          <table className="w-full border-collapse text-sm">
+          <table className="w-full border-collapse text-sm mt-8">
             <thead>
               <tr className="bg-gray-400">
-                <th className="border p-1 text-xs">Sr.</th>
-                <th className="border p-1 text-xs">DESCRIPTION</th>
-                <th className="border p-1 text-xs">HSN</th>
-                <th className="border p-1 text-xs">MFG</th>
-                <th className="border p-1 text-xs">QTY</th>
-                <th className="border p-1 text-xs">UNIT</th>
-                <th className="border p-1 text-xs">BATCH</th>
-                <th className="border p-1 text-xs">EXP.</th>
-                <th className="border p-1 text-xs">MRP</th>
-                <th className="border p-1 text-xs">DISC</th>
-                <th className="border p-1 text-xs">RATE</th>
-                <th className="border p-1 text-xs">AMOUNT</th>
+                <th className="border border-black p-1 text-xs">Sr.</th>
+                <th className="border border-black p-1 text-xs">DESCRIPTION</th>
+                <th className="border border-black p-1 text-xs">HSN</th>
+                <th className="border border-black p-1 text-xs">MFG</th>
+                <th className="border border-black p-1 text-xs">QTY</th>
+                <th className="border border-black p-1 text-xs">UNIT</th>
+                <th className="border border-black p-1 text-xs">BATCH</th>
+                <th className="border border-black p-1 text-xs">EXP.</th>
+                <th className="border border-black p-1 text-xs">MRP</th>
+                <th className="border border-black p-1 text-xs">DISC</th>
+                <th className="border border-black p-1 text-xs">RATE</th>
+                <th className="border border-black p-1 text-xs">AMOUNT</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item, index) => (
                 <tr key={item.id} className="text-xs">
-                  <td className="border p-1">{index + 1}</td>
-                  <td className="border p-1">{item.description}</td>
-                  <td className="border p-1">{item.hsn}</td>
-                  <td className="border p-1">{item.mfg}</td>
-                  <td className="border p-1">{item.qty}</td>
-                  <td className="border p-1">{item.unit}</td>
-                  <td className="border p-1">{item.batch}</td>
-                  <td className="border p-1">{item.exp}</td>
-                  <td className="border p-1">{item.mrp}</td>
-                  <td className="border p-1">{item.disc}</td>
-                  <td className="border p-1">{item.rate}</td>
-                  <td className="border p-1">{item.amount.toFixed(2)}</td>
+                  <td className="border border-black p-1">{index + 1}</td>
+                  <td className="border border-black p-1">{item.description}</td>
+                  <td className="border border-black p-1">{item.hsn}</td>
+                  <td className="border border-black p-1">{item.mfg}</td>
+                  <td className="border border-black p-1">{item.qty}</td>
+                  <td className="border border-black p-1">{item.unit}</td>
+                  <td className="border border-black p-1">{item.batch}</td>
+                  <td className="border border-black p-1">{item.exp}</td>
+                  <td className="border border-black p-1">{item.mrp}</td>
+                  <td className="border border-black p-1">{item.disc}</td>
+                  <td className="border border-black p-1">{item.rate}</td>
+                  <td className="border border-black p-1">{item.amount?.toFixed(2) || ""}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot className="text-xs">
               <tr>
-                <td colSpan={11} className="border p-1 text-right">
-                  <strong>ITEMS: {items.length}</strong>
+                <td colSpan={11} className="border border-black p-1 text-right">
+                  <strong>ITEMS: {getActiveItemCount()}</strong>
                 </td>
-                <td className="border p-1">
+                <td className="border border-black p-1">
                   <strong>QTY: {calculateTotalItems()}</strong>
                 </td>
               </tr>
               <tr>
-                <td colSpan={11} className="border p-1 text-right">
+                <td colSpan={11} className="border border-black p-1 text-right">
                   <strong>Total Pay(Rs.):</strong>
                 </td>
-                <td className="border p-1">
+                <td className="border border-black p-1">
                   <strong>{calculateTotal().toFixed(2)}</strong>
                 </td>
               </tr>
