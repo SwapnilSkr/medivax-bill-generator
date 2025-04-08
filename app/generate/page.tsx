@@ -710,7 +710,7 @@ export default function BillGenerator() {
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-2">
         <h2 className="text-xl font-bold mb-4">Bill Preview</h2>
         <div className="border px-[100px] py-2" ref={componentRef}>
           <div className="mb-2">
@@ -773,11 +773,11 @@ export default function BillGenerator() {
             </div>
           </div>
 
-          <table className="w-full table-fixed border-collapse text-sm mt-8">
+          <table className="w-full table-fixed border-collapse text-sm">
             <thead>
               <tr className="bg-gray-400">
                 <th className="border border-black p-1 text-xs w-[4%] align-top">Sr.</th>
-                <th className="border border-black p-1 text-xs w-[25%] align-top">DESCRIPTION</th>
+                <th className="border border-black p-1 text-xs w-[20%] align-top">DESCRIPTION</th>
                 <th className="border border-black p-1 text-xs w-[8%] align-top">HSN</th>
                 <th className="border border-black p-1 text-xs w-[8%] align-top">MFG</th>
                 <th className="border border-black p-1 text-xs w-[5%] align-top">QTY</th>
@@ -787,7 +787,7 @@ export default function BillGenerator() {
                 <th className="border border-black p-1 text-xs w-[7%] align-top">MRP</th>
                 <th className="border border-black p-1 text-xs w-[6%] align-top">DISC</th>
                 <th className="border border-black p-1 text-xs w-[6%] align-top">RATE</th>
-                <th className="border border-black p-1 text-xs w-[6%] align-top">AMOUNT</th>
+                <th className="border border-black p-1 text-xs w-[11%] align-top">AMOUNT</th>
               </tr>
             </thead>
             <tbody>
