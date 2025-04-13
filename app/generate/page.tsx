@@ -548,7 +548,7 @@ export default function BillGenerator() {
       <div className="mb-6">
         <h2 className="text-xl font-bold mb-2">Items</h2>
         <div className="overflow-x-auto">
-          <table className="w-full table-auto border-collapse">
+          <table className="w-full table-fixed border-collapse text-sm mt-8">
             <thead>
               <tr className="bg-gray-100">
                 <th className="border p-2">Sr.</th>
@@ -828,136 +828,60 @@ export default function BillGenerator() {
                 <tr key={item.id} className="text-xs">
                   <td className="border border-black p-1 text-center align-top">{index + 1}</td>
                   <td className="border border-black p-1 align-top">
-                    <textarea
-                      value={item.description}
-                      onChange={(e) =>
-                        handleItemChange(index, "description", e.target.value)
-                      }
-                      className="w-full bg-transparent focus:outline-none resize-none overflow-hidden whitespace-pre-wrap"
-                      rows={1}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = target.scrollHeight + 'px';
-                      }}
-                    />
+                    <div className="w-full whitespace-pre-wrap break-words overflow-visible min-h-[20px]">
+                      {item.description}
+                    </div>
                   </td>
                   <td className="border border-black p-1 align-top">
-                    <textarea
-                      value={item.hsn}
-                      onChange={(e) =>
-                        handleItemChange(index, "hsn", e.target.value)
-                      }
-                      className="w-full bg-transparent focus:outline-none resize-none overflow-hidden whitespace-pre-wrap"
-                      rows={1}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = target.scrollHeight + 'px';
-                      }}
-                    />
+                    <div className="w-full whitespace-pre-wrap break-words overflow-visible min-h-[20px]">
+                      {item.hsn}
+                    </div>
                   </td>
                   <td className="border border-black p-1 align-top">
-                    <textarea
-                      value={item.mfg}
-                      onChange={(e) =>
-                        handleItemChange(index, "mfg", e.target.value)
-                      }
-                      className="w-full bg-transparent focus:outline-none resize-none overflow-hidden whitespace-pre-wrap"
-                      rows={1}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = target.scrollHeight + 'px';
-                      }}
-                    />
+                    <div className="w-full whitespace-pre-wrap break-words overflow-visible min-h-[20px]">
+                      {item.mfg}
+                    </div>
                   </td>
                   <td className="border border-black p-1 align-top">
-                    <input
-                      type="number"
-                      value={item.qty ?? ''}
-                      onChange={(e) =>
-                        handleItemChange(index, "qty", e.target.value)
-                      }
-                      className="w-full bg-transparent focus:outline-none"
-                    />
+                    <div className="w-full whitespace-pre-wrap break-words overflow-visible min-h-[20px]">
+                      {item.qty}
+                    </div>
                   </td>
                   <td className="border border-black p-1 align-top">
-                    <textarea
-                      value={item.unit}
-                      onChange={(e) =>
-                        handleItemChange(index, "unit", e.target.value)
-                      }
-                      className="w-full bg-transparent focus:outline-none resize-none overflow-hidden whitespace-pre-wrap"
-                      rows={1}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = target.scrollHeight + 'px';
-                      }}
-                    />
+                    <div className="w-full whitespace-pre-wrap break-words overflow-visible min-h-[20px]">
+                      {item.unit}
+                    </div>
                   </td>
                   <td className="border border-black p-1 align-top">
-                    <textarea
-                      value={item.batch}
-                      onChange={(e) =>
-                        handleItemChange(index, "batch", e.target.value)
-                      }
-                      className="w-full bg-transparent focus:outline-none resize-none overflow-hidden whitespace-pre-wrap"
-                      rows={1}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = target.scrollHeight + 'px';
-                      }}
-                    />
+                    <div className="w-full whitespace-pre-wrap break-words overflow-visible min-h-[20px]">
+                      {item.batch}
+                    </div>
                   </td>
                   <td className="border border-black p-1 align-top">
-                    <textarea
-                      value={item.exp}
-                      onChange={(e) =>
-                        handleItemChange(index, "exp", e.target.value)
-                      }
-                      className="w-full bg-transparent focus:outline-none resize-none overflow-hidden whitespace-pre-wrap"
-                      rows={1}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = target.scrollHeight + 'px';
-                      }}
-                    />
+                    <div className="w-full whitespace-pre-wrap break-words overflow-visible min-h-[20px]">
+                      {item.exp}
+                    </div>
                   </td>
                   <td className="border border-black p-1 align-top">
-                    <input
-                      type="number"
-                      value={item.mrp ?? ''}
-                      onChange={(e) =>
-                        handleItemChange(index, "mrp", e.target.value)
-                      }
-                      className="w-full bg-transparent focus:outline-none"
-                    />
+                    <div className="w-full whitespace-pre-wrap break-words overflow-visible min-h-[20px]">
+                      {item.mrp}
+                    </div>
                   </td>
                   <td className="border border-black p-1 align-top">
-                    <input
-                      type="number"
-                      value={item.disc ?? ''}
-                      onChange={(e) =>
-                        handleItemChange(index, "disc", e.target.value)
-                      }
-                      className="w-full bg-transparent focus:outline-none"
-                    />
+                    <div className="w-full whitespace-pre-wrap break-words overflow-visible min-h-[20px]">
+                      {item.disc}
+                    </div>
                   </td>
                   <td className="border border-black p-1 align-top">
-                    <input
-                      type="number"
-                      value={item.rate ?? ''}
-                      onChange={(e) =>
-                        handleItemChange(index, "rate", e.target.value)
-                      }
-                      className="w-full bg-transparent focus:outline-none"
-                    />
+                    <div className="w-full whitespace-pre-wrap break-words overflow-visible min-h-[20px]">
+                      {item.rate}
+                    </div>
                   </td>
-                  <td className="border border-black p-1 text-right align-top">{item.amount?.toFixed(2) || ""}</td>
+                  <td className="border border-black p-1 text-right align-top">
+                    <div className="w-full whitespace-pre-wrap break-words overflow-visible min-h-[20px]">
+                      {item.amount?.toFixed(2) || ""}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
