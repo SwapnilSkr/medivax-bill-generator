@@ -10,7 +10,9 @@ interface BillInfoType {
   billDate: string;
   billTime: string;
   gstNo: string;
+  nameType: "Doctor" | "Patient";
   doctorName: string;
+  refDoctor: string;
   address: string;
   mobile: string;
   mode: "CREDIT" | "CASH/ONLINE";
@@ -39,7 +41,9 @@ export default function BillGenerator() {
     billDate: "",
     billTime: "",
     gstNo: "19AAFFH8112F1ZI",
+    nameType: "Doctor",
     doctorName: "",
+    refDoctor: "",
     address: "",
     mobile: "",
     mode: "CREDIT",
@@ -454,7 +458,19 @@ export default function BillGenerator() {
           />
         </div>
         <div>
-          <label className="block mb-1">Doctor Name:</label>
+          <label className="block mb-1">Name Type:</label>
+          <select
+            name="nameType"
+            value={billInfo.nameType}
+            onChange={handleBillInfoChange}
+            className="w-full p-2 border rounded"
+          >
+            <option value="Doctor">Doctor Name</option>
+            <option value="Patient">Patient Name</option>
+          </select>
+        </div>
+        <div>
+          <label className="block mb-1">{billInfo.nameType} Name:</label>
           <input
             type="text"
             name="doctorName"
@@ -463,6 +479,18 @@ export default function BillGenerator() {
             className="w-full p-2 border rounded"
           />
         </div>
+        {billInfo.nameType === "Patient" && (
+          <div>
+            <label className="block mb-1">Ref Doctor:</label>
+            <input
+              type="text"
+              name="refDoctor"
+              value={billInfo.refDoctor}
+              onChange={handleBillInfoChange}
+              className="w-full p-2 border rounded"
+            />
+          </div>
+        )}
         <div>
           <label className="block mb-1">Address:</label>
           <input
@@ -753,8 +781,13 @@ export default function BillGenerator() {
             </div>
             <div className="text-left mt-1 text-sm">
               <p>
-                <strong>Name:</strong> {billInfo.doctorName}
+                <strong>{billInfo.nameType} Name:</strong> {billInfo.doctorName}
               </p>
+              {billInfo.nameType === "Patient" && billInfo.refDoctor && (
+                <p>
+                  <strong>Ref Doctor:</strong> {billInfo.refDoctor}
+                </p>
+              )}
               <p>
                 <strong>Address:</strong> {billInfo.address}
               </p>
