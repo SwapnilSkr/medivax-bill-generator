@@ -283,7 +283,8 @@ export default function BillGenerator() {
   };
 
   const getActiveItemCount = (): number => {
-    return items.filter(item => item.qty !== null || item.description !== "").length;
+    return items.filter((item) => item.qty !== null || item.description !== "")
+      .length;
   };
 
   const componentRef = useRef<HTMLDivElement>(null);
@@ -603,7 +604,7 @@ export default function BillGenerator() {
                   <td className="border p-2">
                     <input
                       type="number"
-                      value={item.qty ?? ''}
+                      value={item.qty ?? ""}
                       onChange={(e) =>
                         handleItemChange(index, "qty", e.target.value)
                       }
@@ -643,7 +644,7 @@ export default function BillGenerator() {
                   <td className="border p-2">
                     <input
                       type="number"
-                      value={item.mrp ?? ''}
+                      value={item.mrp ?? ""}
                       onChange={(e) =>
                         handleItemChange(index, "mrp", e.target.value)
                       }
@@ -653,7 +654,7 @@ export default function BillGenerator() {
                   <td className="border p-2">
                     <input
                       type="number"
-                      value={item.disc ?? ''}
+                      value={item.disc ?? ""}
                       onChange={(e) =>
                         handleItemChange(index, "disc", e.target.value)
                       }
@@ -663,14 +664,16 @@ export default function BillGenerator() {
                   <td className="border p-2">
                     <input
                       type="number"
-                      value={item.rate ?? ''}
+                      value={item.rate ?? ""}
                       onChange={(e) =>
                         handleItemChange(index, "rate", e.target.value)
                       }
                       className="w-full p-1 border"
                     />
                   </td>
-                  <td className="border p-2">{item.amount?.toFixed(2) || ""}</td>
+                  <td className="border p-2">
+                    {item.amount?.toFixed(2) || ""}
+                  </td>
                   <td className="border p-2">
                     {items.length > 10 && (
                       <button
@@ -809,24 +812,50 @@ export default function BillGenerator() {
           <table className="w-full table-fixed border-collapse text-sm">
             <thead>
               <tr className="bg-gray-400">
-                <th className="border border-black p-1 text-xs w-[4%] align-top">Sr.</th>
-                <th className="border border-black p-1 text-xs w-[15%] align-top">DESCRIPTION</th>
-                <th className="border border-black p-1 text-xs w-[10%] align-top">HSN</th>
-                <th className="border border-black p-1 text-xs w-[8%] align-top">MFG</th>
-                <th className="border border-black p-1 text-xs w-[7%] align-top">QTY</th>
-                <th className="border border-black p-1 text-xs w-[7%] align-top">UNIT</th>
-                <th className="border border-black p-1 text-xs w-[10%] align-top">BATCH</th>
-                <th className="border border-black p-1 text-xs w-[8%] align-top">EXP.</th>
-                <th className="border border-black p-1 text-xs w-[7%] align-top">MRP</th>
-                <th className="border border-black p-1 text-xs w-[6%] align-top">DISC</th>
-                <th className="border border-black p-1 text-xs w-[6%] align-top">RATE</th>
-                <th className="border border-black p-1 text-xs w-[11%] align-top">AMOUNT</th>
+                <th className="border border-black p-1 text-xs w-[4%] align-top">
+                  Sr.
+                </th>
+                <th className="border border-black p-1 text-xs w-[15%] align-top">
+                  DESCRIPTION
+                </th>
+                <th className="border border-black p-1 text-xs w-[10%] align-top">
+                  HSN
+                </th>
+                <th className="border border-black p-1 text-xs w-[8%] align-top">
+                  MFG
+                </th>
+                <th className="border border-black p-1 text-xs w-[7%] align-top">
+                  QTY
+                </th>
+                <th className="border border-black p-1 text-xs w-[7%] align-top">
+                  UNIT
+                </th>
+                <th className="border border-black p-1 text-xs w-[10%] align-top">
+                  BATCH
+                </th>
+                <th className="border border-black p-1 text-xs w-[8%] align-top">
+                  EXP.
+                </th>
+                <th className="border border-black p-1 text-xs w-[7%] align-top">
+                  MRP
+                </th>
+                <th className="border border-black p-1 text-xs w-[6%] align-top">
+                  DISC
+                </th>
+                <th className="border border-black p-1 text-xs w-[6%] align-top">
+                  RATE
+                </th>
+                <th className="border border-black p-1 text-xs w-[11%] align-top">
+                  AMOUNT
+                </th>
               </tr>
             </thead>
             <tbody>
               {items.map((item, index) => (
                 <tr key={item.id} className="text-xs">
-                  <td className="border border-black p-1 text-center align-top">{index + 1}</td>
+                  <td className="border border-black p-1 text-center align-top">
+                    {index + 1}
+                  </td>
                   <td className="border border-black p-1 align-top">
                     <div className="w-full whitespace-pre-wrap break-words overflow-visible min-h-[20px]">
                       {item.description}
@@ -925,9 +954,6 @@ export default function BillGenerator() {
               KOTAK MAHINDRA BANK, A/c No.-9314146480, IFS CODE: KKBK0000322,
               Park Street, Kolkata-700016
             </p>
-            <span className="text-left text-[12px]">
-              Done in partnership with HRISHIKESH ENTERPRISE
-            </span>
           </div>
         </div>
       </div>
