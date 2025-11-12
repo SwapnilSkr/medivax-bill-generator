@@ -40,7 +40,7 @@ export default function BillGenerator() {
     billNo: "",
     billDate: "",
     billTime: "",
-    gstNo: "19AAFFH8112F1ZI",
+    gstNo: "19HGRPS5830J1ZF",
     nameType: "Doctor",
     doctorName: "",
     refDoctor: "",
@@ -760,9 +760,6 @@ export default function BillGenerator() {
                 </p>
                 <p>
                   <strong>MOBILE:</strong> 8777219601 / 7980076433
-                </p>
-                <p>
-                  <strong>DL NO:</strong> 2246-SBW, 2298-SW
                 </p>
               </div>
               <div className="text-right">
