@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { useReactToPrint } from "react-to-print";
 import domToImage from "dom-to-image";
@@ -757,7 +759,16 @@ export default function BillGenerator() {
         <h2 className="text-xl font-bold mb-4">Bill Preview</h2>
         <div className="border px-[70px] py-2" ref={componentRef}>
           <div className="mb-2">
-            <div className="flex flex-col justify-center">
+            <div className="flex flex-col items-center justify-center text-center">
+              <img
+                src="/assets/MedivaxLogo.jpeg"
+                alt="Medivax Pharma logo"
+                width={80}
+                height={80}
+                className="my-1 h-16 w-auto object-contain"
+                loading="eager"
+                crossOrigin="anonymous"
+              />
               <h1 className="text-[24px] font-bold text-center">
                 Medivax Pharma
               </h1>
