@@ -15,6 +15,7 @@ interface BillInfoType {
   refDoctor: string;
   address: string;
   mobile: string;
+  email: string;
   mode: "CREDIT" | "CASH/ONLINE";
   deliveredBy: string;
   salesPerson: string;
@@ -46,6 +47,7 @@ export default function BillGenerator() {
     refDoctor: "",
     address: "",
     mobile: "",
+    email: "shelly.sarkardec77@gmail.com",
     mode: "CREDIT",
     deliveredBy: "",
     salesPerson: "",
@@ -513,6 +515,16 @@ export default function BillGenerator() {
           />
         </div>
         <div>
+          <label className="block mb-1">Email:</label>
+          <input
+            type="email"
+            name="email"
+            value={billInfo.email}
+            onChange={handleBillInfoChange}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <div>
           <label className="block mb-1">Mode:</label>
           <select
             name="mode"
@@ -760,6 +772,9 @@ export default function BillGenerator() {
                 </p>
                 <p>
                   <strong>MOBILE:</strong> 8777219601 / 7980076433
+                </p>
+                <p>
+                  <strong>Email:</strong> {billInfo.email}
                 </p>
               </div>
               <div className="text-right">
