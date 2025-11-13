@@ -1,4 +1,3 @@
-import { useRef } from "react";
 import { BillInfoType, ItemType } from "@/types/bill";
 import { calculateTotal } from "@/utils/bill";
 import BillHeader from "./BillHeader";
@@ -27,4 +26,3 @@ export default function BillPreview({
     </div>
   );
 }
-
