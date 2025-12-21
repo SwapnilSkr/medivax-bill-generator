@@ -2,7 +2,7 @@ export interface BillInfoType {
   billNo: string;
   billDate: string;
   billTime: string;
-  gstNo: string;
+  // gstNo: string;
   nameType: "Doctor" | "Patient";
   doctorName: string;
   refDoctor: string;
@@ -28,4 +28,3 @@ export interface ItemType {
   rate: number | null;
   amount: number | null;
 }
-

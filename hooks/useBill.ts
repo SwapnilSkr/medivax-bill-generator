@@ -7,7 +7,7 @@ export const useBill = () => {
     billNo: "",
     billDate: "",
     billTime: "",
-    gstNo: "19HGRPS5830J1ZF",
+    // gstNo: "19HGRPS5830J1ZF",
     nameType: "Doctor",
     doctorName: "",
     refDoctor: "",

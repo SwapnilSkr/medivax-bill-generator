@@ -39,7 +39,7 @@ export default function BillForm({ billInfo, onChange }: BillFormProps) {
           className="w-full p-2 border rounded"
         />
       </div>
-      <div>
+      {/* <div>
         <label className="block mb-1">GST No:</label>
         <input
           type="text"
@@ -48,7 +48,7 @@ export default function BillForm({ billInfo, onChange }: BillFormProps) {
           onChange={onChange}
           className="w-full p-2 border rounded"
         />
-      </div>
+      </div> */}
       <div>
         <label className="block mb-1">Name Type:</label>
         <select
@@ -148,4 +148,3 @@ export default function BillForm({ billInfo, onChange }: BillFormProps) {
     </div>
   );
 }
-
