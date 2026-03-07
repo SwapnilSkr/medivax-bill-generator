@@ -8,18 +8,20 @@ interface BillPreviewProps {
   billInfo: BillInfoType;
   items: ItemType[];
   componentRef: React.RefObject<HTMLDivElement | null>;
+  showGst?: boolean;
 }
 
 export default function BillPreview({
   billInfo,
   items,
   componentRef,
+  showGst = true,
 }: BillPreviewProps) {
   return (
     <div className="mt-2">
       <h2 className="text-xl font-bold mb-4">Bill Preview</h2>
       <div className="border px-[70px] py-2" ref={componentRef}>
-        <BillHeader billInfo={billInfo} />
+        <BillHeader billInfo={billInfo} showGst={showGst} />
         <BillPreviewTable items={items} />
         <BillFooter totalAmount={calculateTotal(items)} />
       </div>

@@ -4,9 +4,10 @@ import { BillInfoType } from "@/types/bill";
 
 interface BillHeaderProps {
   billInfo: BillInfoType;
+  showGst?: boolean;
 }
 
-export default function BillHeader({ billInfo }: BillHeaderProps) {
+export default function BillHeader({ billInfo, showGst = true }: BillHeaderProps) {
   return (
     <div className="mb-2">
       <div className="flex flex-col items-center justify-center text-center">
@@ -32,9 +33,11 @@ export default function BillHeader({ billInfo }: BillHeaderProps) {
           <p>
             <strong>Email:</strong> {billInfo.email}
           </p>
-          <p>
-            <strong>GST NO:</strong> {billInfo.gstNo}
-          </p>
+          {showGst && (
+            <p>
+              <strong>GST NO:</strong> {billInfo.gstNo}
+            </p>
+          )}
         </div>
         <div className="text-right">
           <p>

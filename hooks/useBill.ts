@@ -23,6 +23,7 @@ export const useBill = () => {
   const [orientation, setOrientation] = useState<"portrait" | "landscape">(
     "portrait"
   );
+  const [includeGst, setIncludeGst] = useState(true);
 
   useEffect(() => {
     setBillInfo((prev) => ({
@@ -101,6 +102,8 @@ export const useBill = () => {
     items,
     orientation,
     setOrientation,
+    includeGst,
+    setIncludeGst,
     handleBillInfoChange,
     handleItemChange,
     addItem,

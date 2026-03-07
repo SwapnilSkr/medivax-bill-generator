@@ -15,6 +15,8 @@ export default function BillGenerator() {
     items,
     orientation,
     setOrientation,
+    includeGst,
+    setIncludeGst,
     handleBillInfoChange,
     handleItemChange,
     addItem,
@@ -41,7 +43,12 @@ export default function BillGenerator() {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Medivax Pharma Bill Generator</h1>
 
-      <BillForm billInfo={billInfo} onChange={handleBillInfoChange} />
+      <BillForm
+        billInfo={billInfo}
+        onChange={handleBillInfoChange}
+        includeGst={includeGst}
+        onIncludeGstChange={setIncludeGst}
+      />
 
       <ItemsTable
         items={items}
@@ -62,6 +69,7 @@ export default function BillGenerator() {
         billInfo={billInfo}
         items={items}
         componentRef={componentRef}
+        showGst={includeGst}
       />
     </div>
   );

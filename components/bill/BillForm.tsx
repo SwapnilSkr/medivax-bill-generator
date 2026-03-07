@@ -4,9 +4,16 @@ import { BillInfoType } from "@/types/bill";
 interface BillFormProps {
   billInfo: BillInfoType;
   onChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  includeGst?: boolean;
+  onIncludeGstChange?: (value: boolean) => void;
 }
 
-export default function BillForm({ billInfo, onChange }: BillFormProps) {
+export default function BillForm({
+  billInfo,
+  onChange,
+  includeGst = true,
+  onIncludeGstChange,
+}: BillFormProps) {
   return (
     <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
@@ -49,6 +56,18 @@ export default function BillForm({ billInfo, onChange }: BillFormProps) {
           className="w-full p-2 border rounded"
         />
       </div> */}
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="includeGst"
+          checked={includeGst}
+          onChange={(e) => onIncludeGstChange?.(e.target.checked)}
+          className="h-4 w-4 rounded border-gray-300"
+        />
+        <label htmlFor="includeGst" className="block mb-1">
+          Include GST on bill
+        </label>
+      </div>
       <div>
         <label className="block mb-1">Name Type:</label>
         <select
