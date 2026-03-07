@@ -26,14 +26,14 @@ export default function BillHeader({ billInfo }: BillHeaderProps) {
       </div>
       <div className="flex justify-between mt-1 text-sm">
         <div className="text-left">
-          {/* <p>
-            <strong>GST NO:</strong> {billInfo.gstNo}
-          </p> */}
           <p>
             <strong>MOBILE:</strong> 8777219601 / 7980076433
           </p>
           <p>
             <strong>Email:</strong> {billInfo.email}
+          </p>
+          <p>
+            <strong>GST NO:</strong> {billInfo.gstNo}
           </p>
         </div>
         <div className="text-right">
