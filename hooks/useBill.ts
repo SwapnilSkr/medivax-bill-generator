@@ -1,29 +1,33 @@
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, useEffect, useCallback, ChangeEvent } from "react";
 import { BillInfoType, ItemType } from "@/types/bill";
 import { createInitialItems } from "@/utils/bill";
+import type { BillDocument, DraftDocument } from "@/types/bill";
+
+const defaultBillInfo: BillInfoType = {
+  billNo: "",
+  billDate: "",
+  billTime: "",
+  gstNo: "19HGRPS5830J1ZF",
+  nameType: "Doctor",
+  doctorName: "",
+  refDoctor: "",
+  address: "",
+  mobile: "",
+  email: "shelly.sarkardec77@gmail.com",
+  mode: "CREDIT",
+  deliveredBy: "",
+  salesPerson: "",
+};
 
 export const useBill = () => {
-  const [billInfo, setBillInfo] = useState<BillInfoType>({
-    billNo: "",
-    billDate: "",
-    billTime: "",
-    gstNo: "19HGRPS5830J1ZF",
-    nameType: "Doctor",
-    doctorName: "",
-    refDoctor: "",
-    address: "",
-    mobile: "",
-    email: "shelly.sarkardec77@gmail.com",
-    mode: "CREDIT",
-    deliveredBy: "",
-    salesPerson: "",
-  });
-
+  const [billInfo, setBillInfo] = useState<BillInfoType>(defaultBillInfo);
   const [items, setItems] = useState<ItemType[]>(createInitialItems(10));
   const [orientation, setOrientation] = useState<"portrait" | "landscape">(
     "portrait"
   );
   const [includeGst, setIncludeGst] = useState(true);
+  const [editingBillId, setEditingBillId] = useState<string | null>(null);
+  const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
 
   useEffect(() => {
     setBillInfo((prev) => ({
@@ -97,6 +101,41 @@ export const useBill = () => {
     }
   };
 
+  const loadFromDraft = useCallback((draft: DraftDocument) => {
+    setBillInfo(draft.billInfo);
+    setItems(draft.items);
+    setOrientation(draft.orientation);
+    setIncludeGst(draft.includeGst);
+    setEditingDraftId(draft.id);
+    setEditingBillId(null);
+  }, []);
+
+  const loadFromBill = useCallback((bill: BillDocument) => {
+    setBillInfo(bill.billInfo);
+    setItems(bill.items);
+    setOrientation(bill.orientation);
+    setIncludeGst(bill.includeGst);
+    setEditingBillId(bill.id);
+    setEditingDraftId(null);
+  }, []);
+
+  const reset = useCallback(() => {
+    setBillInfo({
+      ...defaultBillInfo,
+      billDate: new Date().toISOString().split("T")[0],
+      billTime: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+    });
+    setItems(createInitialItems(10));
+    setOrientation("portrait");
+    setIncludeGst(true);
+    setEditingBillId(null);
+    setEditingDraftId(null);
+  }, []);
+
   return {
     billInfo,
     items,
@@ -104,9 +143,14 @@ export const useBill = () => {
     setOrientation,
     includeGst,
     setIncludeGst,
+    editingBillId,
+    editingDraftId,
     handleBillInfoChange,
     handleItemChange,
     addItem,
     removeItem,
+    loadFromDraft,
+    loadFromBill,
+    reset,
   };
 };

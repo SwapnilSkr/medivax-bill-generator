@@ -5,6 +5,7 @@ import {
   getActiveItemCount,
   numberToWords,
 } from "@/utils/bill";
+import { Button } from "@/components/ui/button";
 
 interface BillActionsProps {
   items: ItemType[];
@@ -12,6 +13,10 @@ interface BillActionsProps {
   onOrientationChange: (orientation: "portrait" | "landscape") => void;
   onPrint: () => void;
   onExportPDF: () => void;
+  onSaveBill: () => void | Promise<void>;
+  onSaveDraft: () => void;
+  onReset?: () => void;
+  isEditingDraft?: boolean;
 }
 
 export default function BillActions({
@@ -20,6 +25,10 @@ export default function BillActions({
   onOrientationChange,
   onPrint,
   onExportPDF,
+  onSaveBill,
+  onSaveDraft,
+  onReset,
+  isEditingDraft,
 }: BillActionsProps) {
   const totalAmount = calculateTotal(items);
   const totalItems = getActiveItemCount(items);
@@ -41,32 +50,37 @@ export default function BillActions({
           <strong>In Words:</strong> {numberToWords(totalAmount)}
         </p>
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex flex-wrap items-center gap-2">
         <div>
-          <label className="block mb-1">PDF Orientation:</label>
+          <label className="block mb-1 text-sm font-medium text-muted-foreground">PDF Orientation:</label>
           <select
             value={orientation}
             onChange={(e) =>
               onOrientationChange(e.target.value as "portrait" | "landscape")
             }
-            className="p-2 border rounded"
+            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
           >
             <option value="portrait">Portrait</option>
             <option value="landscape">Landscape</option>
           </select>
         </div>
-        <button
-          onClick={onPrint}
-          className="bg-[#22c55e] text-white px-4 py-2 rounded hover:bg-[#16a34a]"
-        >
+        <Button variant="outline" size="sm" onClick={onSaveDraft}>
+          {isEditingDraft ? "Update Draft" : "Save as Draft"}
+        </Button>
+        <Button size="sm" onClick={onSaveBill} className="bg-blue-600 hover:bg-blue-700 text-white">
+          Save Bill
+        </Button>
+        {onReset && (
+          <Button variant="ghost" size="sm" onClick={onReset}>
+            New Bill
+          </Button>
+        )}
+        <Button size="sm" onClick={onPrint} className="bg-green-600 hover:bg-green-700">
           Print Bill
-        </button>
-        <button
-          onClick={onExportPDF}
-          className="bg-[#a855f7] text-white px-4 py-2 rounded hover:bg-[#9333ea]"
-        >
+        </Button>
+        <Button size="sm" onClick={onExportPDF} variant="secondary" className="bg-purple-600 text-white hover:bg-purple-700">
           Export as PDF
-        </button>
+        </Button>
       </div>
     </div>
   );

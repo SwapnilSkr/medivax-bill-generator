@@ -28,3 +28,25 @@ export interface ItemType {
   rate: number | null;
   amount: number | null;
 }
+
+export interface BillDocument {
+  id: string;
+  displayName: string;
+  billInfo: BillInfoType;
+  items: ItemType[];
+  orientation: "portrait" | "landscape";
+  includeGst: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DraftDocument {
+  id: string;
+  displayName: string;
+  billInfo: BillInfoType;
+  items: ItemType[];
+  orientation: "portrait" | "landscape";
+  includeGst: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}

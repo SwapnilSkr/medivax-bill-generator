@@ -25,10 +25,15 @@ export default function LandingPage() {
             <Link href="#" className="text-sm font-medium hover:underline underline-offset-4">
               Contact
             </Link>
+            <Link href="/dashboard" className="text-sm font-medium hover:underline underline-offset-4">
+              Dashboard
+            </Link>
           </nav>
-          <Button variant="outline" size="sm" className="hidden md:flex">
-            Login
-          </Button>
+          <Link href="/dashboard">
+            <Button variant="outline" size="sm" className="hidden md:flex">
+              Dashboard
+            </Button>
+          </Link>
         </div>
       </header>
       <main className="flex-1">
@@ -129,8 +134,15 @@ export default function LandingPage() {
                   Quick and easy billing for our distribution services
                 </p>
               </div>
-              <div className="mx-auto w-full max-w-sm space-y-2">
+              <div className="mx-auto w-full max-w-md space-y-4">
                 <GenerateBillButton />
+                <div className="flex justify-center">
+                  <Link href="/dashboard">
+                    <Button variant="outline" size="sm">
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

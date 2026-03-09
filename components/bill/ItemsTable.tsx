@@ -1,4 +1,6 @@
 import { ItemType } from "@/types/bill";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface ItemsTableProps {
   items: ItemType[];
@@ -11,6 +13,9 @@ interface ItemsTableProps {
   onRemoveItem: (index: number) => void;
 }
 
+const inputClass =
+  "w-full h-8 rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
+
 export default function ItemsTable({
   items,
   onItemChange,
@@ -19,125 +24,132 @@ export default function ItemsTable({
 }: ItemsTableProps) {
   return (
     <div className="mb-6">
-      <h2 className="text-xl font-bold mb-2">Items</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full table-fixed border-collapse text-sm mt-8">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border p-2">Sr.</th>
-              <th className="border p-2">Description</th>
-              <th className="border p-2">HSN</th>
-              <th className="border p-2">MFG</th>
-              <th className="border p-2">QTY</th>
-              <th className="border p-2">UNIT</th>
-              <th className="border p-2">BATCH</th>
-              <th className="border p-2">EXP.</th>
-              <th className="border p-2">MRP</th>
-              <th className="border p-2">DISC</th>
-              <th className="border p-2">RATE</th>
-              <th className="border p-2">AMOUNT</th>
-              <th className="border p-2">Action</th>
+      <h2 className="text-xl font-bold mb-4">Items</h2>
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="w-full table-fixed border-collapse text-sm">
+          <thead className="sticky top-0 bg-muted/80 backdrop-blur-sm">
+            <tr>
+              <th className="border-b p-2 text-left font-semibold">Sr.</th>
+              <th className="border-b p-2 text-left font-semibold">Description</th>
+              <th className="border-b p-2 text-left font-semibold">HSN</th>
+              <th className="border-b p-2 text-left font-semibold">MFG</th>
+              <th className="border-b p-2 text-left font-semibold">QTY</th>
+              <th className="border-b p-2 text-left font-semibold">UNIT</th>
+              <th className="border-b p-2 text-left font-semibold">BATCH</th>
+              <th className="border-b p-2 text-left font-semibold">EXP.</th>
+              <th className="border-b p-2 text-left font-semibold">MRP</th>
+              <th className="border-b p-2 text-left font-semibold">DISC</th>
+              <th className="border-b p-2 text-left font-semibold">RATE</th>
+              <th className="border-b p-2 text-left font-semibold">AMOUNT</th>
+              <th className="border-b p-2 text-left font-semibold">Action</th>
             </tr>
           </thead>
           <tbody>
             {items.map((item, index) => (
-              <tr key={item.id}>
-                <td className="border p-2">{index + 1}</td>
-                <td className="border p-2">
-                  <input
+              <tr key={item.id} className="border-b last:border-b-0">
+                <td className="p-2">{index + 1}</td>
+                <td className="p-2">
+                  <Input
                     type="text"
                     value={item.description}
                     onChange={(e) =>
                       onItemChange(index, "description", e.target.value)
                     }
-                    className="w-full p-1 border"
+                    className={inputClass}
                   />
                 </td>
-                <td className="border p-2">
-                  <input
+                <td className="p-2">
+                  <Input
                     type="text"
                     value={item.hsn}
                     onChange={(e) => onItemChange(index, "hsn", e.target.value)}
-                    className="w-full p-1 border"
+                    className={inputClass}
                   />
                 </td>
-                <td className="border p-2">
-                  <input
+                <td className="p-2">
+                  <Input
                     type="text"
                     value={item.mfg}
                     onChange={(e) => onItemChange(index, "mfg", e.target.value)}
-                    className="w-full p-1 border"
+                    className={inputClass}
                   />
                 </td>
-                <td className="border p-2">
-                  <input
+                <td className="p-2">
+                  <Input
                     type="number"
                     value={item.qty ?? ""}
                     onChange={(e) => onItemChange(index, "qty", e.target.value)}
-                    className="w-full p-1 border"
+                    className={inputClass}
                   />
                 </td>
-                <td className="border p-2">
-                  <input
+                <td className="p-2">
+                  <Input
                     type="text"
                     value={item.unit}
-                    onChange={(e) => onItemChange(index, "unit", e.target.value)}
-                    className="w-full p-1 border"
+                    onChange={(e) =>
+                      onItemChange(index, "unit", e.target.value)
+                    }
+                    className={inputClass}
                   />
                 </td>
-                <td className="border p-2">
-                  <input
+                <td className="p-2">
+                  <Input
                     type="text"
                     value={item.batch}
                     onChange={(e) =>
                       onItemChange(index, "batch", e.target.value)
                     }
-                    className="w-full p-1 border"
+                    className={inputClass}
                   />
                 </td>
-                <td className="border p-2">
-                  <input
+                <td className="p-2">
+                  <Input
                     type="text"
                     value={item.exp}
                     onChange={(e) => onItemChange(index, "exp", e.target.value)}
-                    className="w-full p-1 border"
+                    className={inputClass}
                   />
                 </td>
-                <td className="border p-2">
-                  <input
+                <td className="p-2">
+                  <Input
                     type="number"
                     value={item.mrp ?? ""}
                     onChange={(e) => onItemChange(index, "mrp", e.target.value)}
-                    className="w-full p-1 border"
+                    className={inputClass}
                   />
                 </td>
-                <td className="border p-2">
-                  <input
+                <td className="p-2">
+                  <Input
                     type="number"
                     value={item.disc ?? ""}
-                    onChange={(e) => onItemChange(index, "disc", e.target.value)}
-                    className="w-full p-1 border"
+                    onChange={(e) =>
+                      onItemChange(index, "disc", e.target.value)
+                    }
+                    className={inputClass}
                   />
                 </td>
-                <td className="border p-2">
-                  <input
+                <td className="p-2">
+                  <Input
                     type="number"
                     value={item.rate ?? ""}
-                    onChange={(e) => onItemChange(index, "rate", e.target.value)}
-                    className="w-full p-1 border"
+                    onChange={(e) =>
+                      onItemChange(index, "rate", e.target.value)
+                    }
+                    className={inputClass}
                   />
                 </td>
-                <td className="border p-2">
+                <td className="p-2 py-2.5">
                   {item.amount?.toFixed(2) || ""}
                 </td>
-                <td className="border p-2">
+                <td className="p-2">
                   {items.length > 10 && (
-                    <button
+                    <Button
+                      variant="destructive"
+                      size="sm"
                       onClick={() => onRemoveItem(index)}
-                      className="bg-[#ef4444] text-white px-2 py-1 rounded hover:bg-[#dc2626]"
                     >
                       Remove
-                    </button>
+                    </Button>
                   )}
                 </td>
               </tr>
@@ -145,13 +157,9 @@ export default function ItemsTable({
           </tbody>
         </table>
       </div>
-      <button
-        onClick={onAddItem}
-        className="mt-2 bg-[#3b82f6] text-white px-4 py-2 rounded hover:bg-[#2563eb]"
-      >
+      <Button onClick={onAddItem} className="mt-4">
         Add Item
-      </button>
+      </Button>
     </div>
   );
 }
-
