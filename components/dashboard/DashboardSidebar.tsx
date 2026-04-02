@@ -26,8 +26,8 @@ export default function DashboardSidebar() {
   const onDashboard = pathname === "/dashboard";
 
   return (
-    <aside className="flex min-h-screen w-64 flex-col border-r border-border/60 bg-slate-950 text-slate-100">
-      <div className="border-b border-white/10 px-4 py-5">
+    <aside className="flex h-full w-64 shrink-0 flex-col border-r border-border/60 bg-slate-950 text-slate-100">
+      <div className="shrink-0 border-b border-white/10 px-4 py-5">
         <Link href="/" className="flex items-center gap-3 transition-opacity hover:opacity-90">
           <Image
             src="/assets/MedivaxLogo.jpeg"
@@ -44,7 +44,7 @@ export default function DashboardSidebar() {
         </Link>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-0.5 p-3">
+      <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain p-3">
         <p className="mb-2 px-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
           Navigate
         </p>
@@ -70,7 +70,7 @@ export default function DashboardSidebar() {
         })}
       </nav>
 
-      <div className="space-y-1 border-t border-white/10 p-3">
+      <div className="shrink-0 space-y-1 border-t border-white/10 bg-slate-950 p-3">
         <Link
           href="/generate"
           className="flex items-center gap-3 rounded-xl bg-white px-3 py-2.5 text-sm font-semibold text-slate-950 shadow-sm transition-colors hover:bg-slate-100"

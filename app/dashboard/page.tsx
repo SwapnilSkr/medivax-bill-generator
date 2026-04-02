@@ -76,10 +76,10 @@ function DashboardContent() {
         : { title: "Drafts", hint: "Continue work-in-progress before posting" };
 
   return (
-    <div className="flex min-h-screen bg-muted/40">
+    <div className="flex h-dvh min-h-0 overflow-hidden bg-muted/40">
       <DashboardSidebar />
 
-      <main className="flex-1 overflow-auto">
+      <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
         <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_90%_50%_at_50%_-20%,oklch(0.93_0.03_250/0.35),transparent)] dark:bg-[radial-gradient(ellipse_90%_50%_at_50%_-20%,oklch(0.25_0.04_265/0.4),transparent)]" />
 
         <div className="mx-auto max-w-7xl px-6 py-8 lg:px-10 lg:py-10">
@@ -195,7 +195,7 @@ export default function DashboardPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-muted/40">
+        <div className="flex h-dvh items-center justify-center bg-muted/40">
           <p className="text-sm text-muted-foreground">Loading workspace…</p>
         </div>
       }
