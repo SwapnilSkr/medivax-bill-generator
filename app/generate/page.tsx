@@ -28,6 +28,8 @@ function GenerateContent() {
     setIncludeGst,
     editingBillId,
     editingDraftId,
+    setEditingBillId,
+    setEditingDraftId,
     handleBillInfoChange,
     handleItemChange,
     addItem,
@@ -42,6 +44,17 @@ function GenerateContent() {
   const [editingDraftDisplayName, setEditingDraftDisplayName] = useState("");
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const componentRef = useRef<HTMLDivElement>(null);
+  /* Keep latest Firestore ids in refs so saves after create cannot race React state updates. */
+  const billIdRef = useRef<string | null>(null);
+  const draftIdRef = useRef<string | null>(null);
+  const saveBillInFlightRef = useRef<Promise<void> | null>(null);
+
+  useEffect(() => {
+    billIdRef.current = editingBillId;
+  }, [editingBillId]);
+  useEffect(() => {
+    draftIdRef.current = editingDraftId;
+  }, [editingDraftId]);
 
   const showMessage = (type: "success" | "error", text: string) => {
     setSaveMessage({ type, text });
@@ -69,6 +82,18 @@ function GenerateContent() {
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
+    pageStyle: `
+      @page {
+        size: A4 ${orientation === "landscape" ? "landscape" : "portrait"};
+        margin: 5mm;
+      }
+      html, body {
+        width: 100% !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    `,
   });
 
   const handlePrintClick = async () => {
@@ -80,6 +105,10 @@ function GenerateContent() {
     const input = componentRef.current;
     if (!input) return;
     await handleSaveBill();
+    /* Let layout/fonts settle so PDF raster matches the visible bill */
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
     await exportToPDF(input, orientation);
   };
 
@@ -90,32 +119,48 @@ function GenerateContent() {
   };
 
   const handleSaveBill = async () => {
-    try {
-      const displayName = getBillDisplayName();
-      await saveBill(editingBillId, {
-        displayName,
-        billInfo,
-        items,
-        orientation,
-        includeGst,
-      });
-      showMessage("success", "Bill saved! View it in the Dashboard.");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to save bill";
-      showMessage("error", msg);
-      console.error("Save bill error:", err);
+    if (saveBillInFlightRef.current) {
+      await saveBillInFlightRef.current;
+      return;
     }
+    const run = async () => {
+      try {
+        const displayName = getBillDisplayName();
+        const id = await saveBill(billIdRef.current, {
+          displayName,
+          billInfo,
+          items,
+          orientation,
+          includeGst,
+        });
+        billIdRef.current = id;
+        setEditingBillId(id);
+        showMessage("success", "Bill saved! View it in the Dashboard.");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to save bill";
+        showMessage("error", msg);
+        console.error("Save bill error:", err);
+      } finally {
+        saveBillInFlightRef.current = null;
+      }
+    };
+    const p = run();
+    saveBillInFlightRef.current = p;
+    await p;
   };
 
   const handleSaveDraft = async (displayName: string) => {
     try {
-      await saveDraft(editingDraftId, {
+      const id = await saveDraft(draftIdRef.current, {
         displayName,
         billInfo,
         items,
         orientation,
         includeGst,
       });
+      draftIdRef.current = id;
+      setEditingDraftId(id);
+      setEditingDraftDisplayName(displayName);
       setSaveDraftModalOpen(false);
       showMessage("success", "Draft saved! View it in the Dashboard.");
     } catch (err) {
@@ -169,6 +214,7 @@ function GenerateContent() {
 
       <ItemsTable
         items={items}
+        includeGst={includeGst}
         onItemChange={handleItemChange}
         onAddItem={addItem}
         onRemoveItem={removeItem}
@@ -176,6 +222,7 @@ function GenerateContent() {
 
       <BillActions
         items={items}
+        includeGst={includeGst}
         orientation={orientation}
         onOrientationChange={setOrientation}
         onPrint={handlePrintClick}

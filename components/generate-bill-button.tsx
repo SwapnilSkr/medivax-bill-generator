@@ -17,38 +17,41 @@ export default function GenerateBillButton() {
   }
 
   return (
-    <div className="flex justify-center my-8">
+    <div className="my-2 flex justify-center">
       <motion.button
-        className="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-8 py-4 font-bold text-white shadow-lg"
+        type="button"
+        className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-linear-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-4 text-[0.9375rem] font-semibold tracking-tight text-white shadow-[0_20px_50px_-15px_rgba(15,23,42,0.65)] ring-1 ring-white/10 dark:from-primary dark:via-primary dark:to-primary dark:shadow-[0_16px_40px_-12px_oklch(0.2_0.04_265/0.45)] dark:ring-white/5"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleClick}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        initial={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        initial={{ boxShadow: "0 12px 40px -12px rgba(15, 23, 42, 0.45)" }}
         animate={{
-          boxShadow: isHovered ? "0 10px 25px rgba(59, 130, 246, 0.5)" : "0 4px 6px rgba(0, 0, 0, 0.1)",
+          boxShadow: isHovered
+            ? "0 24px 60px -16px rgba(15, 23, 42, 0.55)"
+            : "0 12px 40px -12px rgba(15, 23, 42, 0.45)",
         }}
       >
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-300"
+          className="absolute inset-0 bg-linear-to-r from-white/0 via-white/10 to-white/0"
           initial={{ x: "-100%", opacity: 0 }}
           animate={{
             x: isHovered ? 0 : "-100%",
-            opacity: isHovered ? 0.3 : 0,
+            opacity: isHovered ? 1 : 0,
           }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.35 }}
         />
 
         <motion.div
-          className="relative flex items-center justify-center gap-2 z-10"
+          className="relative z-10 flex items-center justify-center gap-2"
           animate={{
             y: isClicked ? -50 : 0,
             opacity: isClicked ? 0 : 1,
           }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
         >
-          <span className="text-lg">Generate Bill</span>
+          <span>Generate bill</span>
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <motion.path
               strokeLinecap="round"
@@ -87,7 +90,7 @@ export default function GenerateBillButton() {
         </motion.div>
 
         <motion.div
-          className="absolute inset-0 bg-blue-600 rounded-full"
+          className="absolute inset-0 rounded-2xl bg-slate-600 dark:bg-primary"
           initial={{ scale: 0, opacity: 0 }}
           animate={{
             scale: isClicked ? 1.5 : 0,
@@ -97,8 +100,8 @@ export default function GenerateBillButton() {
         />
 
         <motion.div
-          className="absolute bottom-0 left-0 right-0 h-1 bg-white"
-          initial={{ scaleX: 0, originX: 0 }}
+          className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/40 to-transparent"
+          initial={{ scaleX: 0, originX: 0.5 }}
           animate={{
             scaleX: isHovered ? 1 : 0,
           }}

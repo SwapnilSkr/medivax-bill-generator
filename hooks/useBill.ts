@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, ChangeEvent } from "react";
 import { BillInfoType, ItemType } from "@/types/bill";
-import { createInitialItems } from "@/utils/bill";
+import { computeLineAmount, createInitialItems } from "@/utils/bill";
 import type { BillDocument, DraftDocument } from "@/types/bill";
 
 const defaultBillInfo: BillInfoType = {
@@ -65,10 +65,14 @@ export const useBill = () => {
     } else {
       newItems[index][field as keyof ItemType] = value as never;
     }
-    if (field === "rate" || field === "qty") {
-      const rate = newItems[index].rate || 0;
-      const qty = newItems[index].qty || 0;
-      newItems[index].amount = rate && qty ? rate * qty : null;
+    if (
+      field === "qty" ||
+      field === "rate" ||
+      field === "mrp" ||
+      field === "disc" ||
+      field === "unit"
+    ) {
+      newItems[index].amount = computeLineAmount(newItems[index]);
     }
     setItems(newItems);
   };
@@ -145,6 +149,8 @@ export const useBill = () => {
     setIncludeGst,
     editingBillId,
     editingDraftId,
+    setEditingBillId,
+    setEditingDraftId,
     handleBillInfoChange,
     handleItemChange,
     addItem,

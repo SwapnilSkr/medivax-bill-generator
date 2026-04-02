@@ -1,14 +1,17 @@
 import { ItemType } from "@/types/bill";
 import {
+  calculateGstBreakdown,
   calculateTotal,
   calculateTotalItems,
   getActiveItemCount,
   numberToWords,
+  amountInWordsInr,
 } from "@/utils/bill";
 import { Button } from "@/components/ui/button";
 
 interface BillActionsProps {
   items: ItemType[];
+  includeGst?: boolean;
   orientation: "portrait" | "landscape";
   onOrientationChange: (orientation: "portrait" | "landscape") => void;
   onPrint: () => void;
@@ -21,6 +24,7 @@ interface BillActionsProps {
 
 export default function BillActions({
   items,
+  includeGst = true,
   orientation,
   onOrientationChange,
   onPrint,
@@ -30,7 +34,8 @@ export default function BillActions({
   onReset,
   isEditingDraft,
 }: BillActionsProps) {
-  const totalAmount = calculateTotal(items);
+  const taxableTotal = calculateTotal(items);
+  const gst = includeGst ? calculateGstBreakdown(items) : null;
   const totalItems = getActiveItemCount(items);
   const totalQuantity = calculateTotalItems(items);
 
@@ -43,12 +48,32 @@ export default function BillActions({
         <p>
           <strong>Total Quantity:</strong> {totalQuantity}
         </p>
-        <p>
-          <strong>Total Amount:</strong> ₹{totalAmount.toFixed(2)}
-        </p>
-        <p>
-          <strong>In Words:</strong> {numberToWords(totalAmount)}
-        </p>
+        {includeGst && gst ? (
+          <>
+            <p>
+              <strong>Taxable value:</strong> ₹{gst.taxableValue.toFixed(2)}
+            </p>
+            <p>
+              <strong>CGST (2.50%):</strong> ₹{gst.cgst.toFixed(2)} &nbsp;|&nbsp;{" "}
+              <strong>SGST (2.50%):</strong> ₹{gst.sgst.toFixed(2)}
+            </p>
+            <p>
+              <strong>Grand total:</strong> ₹{gst.grandTotal.toFixed(2)}
+            </p>
+            <p>
+              <strong>In words:</strong> {amountInWordsInr(gst.grandTotal)}
+            </p>
+          </>
+        ) : (
+          <>
+            <p>
+              <strong>Total Amount:</strong> ₹{taxableTotal.toFixed(2)}
+            </p>
+            <p>
+              <strong>In Words:</strong> {numberToWords(taxableTotal)}
+            </p>
+          </>
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <div>

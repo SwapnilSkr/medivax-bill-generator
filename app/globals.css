@@ -120,3 +120,38 @@
     @apply bg-background text-foreground;
   }
 }
+
+/*
+ * Invoice bill card: ONE set of styles for screen + Export PDF (dom-to-image).
+ * Print uses @media print tweaks below; typography/table padding match so PDF = print.
+ */
+.invoice-compact {
+  font-size: 10px;
+  line-height: 1.38;
+  -webkit-font-smoothing: antialiased;
+}
+
+.invoice-print-root table th,
+.invoice-print-root table td {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+@media print {
+  .invoice-compact {
+    font-size: 10px !important;
+    line-height: 1.38 !important;
+  }
+
+  .invoice-print-root {
+    width: 100% !important;
+    max-width: none !important;
+    color: #0f172a;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .invoice-items-table tbody tr {
+    break-inside: avoid;
+  }
+}
