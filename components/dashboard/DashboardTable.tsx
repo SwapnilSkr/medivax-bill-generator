@@ -74,7 +74,7 @@ export function BillsTable({ bills, onRename, onDelete }: BillsTableProps) {
   const currentBill = bills.find((b) => b.id === renameModalId);
 
   return (
-    <div className="bg-white rounded-lg border shadow-sm">
+    <div className="rounded-2xl border border-border/70 bg-card shadow-sm overflow-hidden">
       <div className="p-4 border-b flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -262,7 +262,7 @@ export function DraftsTable({ drafts, onRename, onDelete }: DraftsTableProps) {
   const currentDraft = drafts.find((d) => d.id === renameModalId);
 
   return (
-    <div className="bg-white rounded-lg border shadow-sm">
+    <div className="rounded-2xl border border-border/70 bg-card shadow-sm overflow-hidden">
       <div className="p-4 border-b flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />

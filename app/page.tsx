@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, Thermometer, Truck, Shield, Sparkles } from "lucide-react"
 import GenerateBillButton from "@/components/generate-bill-button"
@@ -9,9 +10,14 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/75 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:h-17 md:px-6">
           <Link href="/" className="group flex items-center gap-2.5 transition-opacity hover:opacity-90">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/15">
-              <Thermometer className="h-4.5 w-4.5 text-primary" strokeWidth={2} />
-            </span>
+            <Image
+              src="/assets/MedivaxLogo.jpeg"
+              alt="Medivax Pharma logo"
+              width={36}
+              height={36}
+              className="h-9 w-9 shrink-0 rounded-lg object-contain ring-1 ring-border/60"
+              priority
+            />
             <span className="text-base font-semibold tracking-tight text-foreground md:text-[1.05rem]">
               Medivax Pharma
             </span>
@@ -197,17 +203,8 @@ export default function LandingPage() {
               <p className="mt-4 text-pretty text-base leading-relaxed text-slate-400 dark:text-muted-foreground md:text-lg">
                 Professional invoices for distribution services—fast, consistent, and ready to export.
               </p>
-              <div className="mt-10 w-full max-w-md space-y-5">
+              <div className="mt-10 w-full max-w-md">
                 <GenerateBillButton />
-                <Link href="/dashboard" className="block">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-9 w-full rounded-lg border-white/20 bg-white/5 text-white shadow-none backdrop-blur-sm hover:bg-white/10 hover:text-white dark:border-border dark:bg-background/50 dark:text-foreground dark:hover:bg-accent"
-                  >
-                    Go to dashboard
-                  </Button>
-                </Link>
               </div>
             </div>
           </div>

@@ -96,15 +96,13 @@ function GenerateContent() {
     `,
   });
 
-  const handlePrintClick = async () => {
-    await handleSaveBill();
+  const handlePrintClick = () => {
     handlePrint();
   };
 
   const handleExportPDF = async (): Promise<void> => {
     const input = componentRef.current;
     if (!input) return;
-    await handleSaveBill();
     /* Let layout/fonts settle so PDF raster matches the visible bill */
     await new Promise<void>((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
