@@ -8,6 +8,8 @@ interface BillHeaderProps {
 }
 
 const SELLER_GSTIN = "19HGRPS5830J1ZF";
+/** Seller drug licence numbers (Medivax Pharma) */
+const SELLER_DL_NO = "WB/HWH/BIO/W/792998";
 const SELLER_ADDRESS =
   "14 DR. RAJKUMAR KUNDU LANE, SHIBTALA, HOWRAH - 711102";
 const SELLER_MOBILE = "8777219601 / 7980076433";
@@ -86,6 +88,9 @@ export default function BillHeader({ billInfo, showGst = true }: BillHeaderProps
             )}
             <p className="mt-1">
               <span className="font-semibold">Mobile:</span> {SELLER_MOBILE}
+            </p>
+            <p className="mt-1">
+              <span className="font-semibold">DL No.:</span> {SELLER_DL_NO}
             </p>
             <p>
               <span className="font-semibold">E-Mail:</span>{" "}
