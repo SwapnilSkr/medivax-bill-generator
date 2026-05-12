@@ -23,18 +23,23 @@ export default function RenameModal({
 }: RenameModalProps) {
   const [name, setName] = useState(currentName);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setName(currentName);
+    if (open) setError(null);
   }, [currentName, open]);
 
   const handleSave = async () => {
     const trimmed = name.trim();
     if (!trimmed) return;
     setSaving(true);
+    setError(null);
     try {
       await onSave(trimmed);
       onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save");
     } finally {
       setSaving(false);
     }
@@ -45,7 +50,7 @@ export default function RenameModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={onClose}
+      onClick={saving ? undefined : onClose}
     >
       <div
         className={cn(
@@ -63,6 +68,11 @@ export default function RenameModal({
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mb-4"
           autoFocus
         />
+        {error && (
+          <p className="text-sm text-destructive mb-4" role="alert">
+            {error}
+          </p>
+        )}
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={saving}>
             Cancel

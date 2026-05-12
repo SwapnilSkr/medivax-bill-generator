@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useCallback } from "react";
+import { useState, useEffect, Suspense, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ChevronRight, Plus } from "lucide-react";
@@ -31,10 +31,24 @@ function DashboardContent() {
   const tabParam = searchParams.get("tab");
   const section = sectionFromSearchParams(tabParam);
 
-  const { bills, loading: billsLoading, fetchBill, renameBill, deleteBill } = useBills();
-  const { drafts, loading: draftsLoading, renameDraft, deleteDraft } = useDrafts();
+  const {
+    bills,
+    loading: billsLoading,
+    error: billsError,
+    fetchBill,
+    renameBill,
+    deleteBill,
+  } = useBills();
+  const {
+    drafts,
+    loading: draftsLoading,
+    error: draftsError,
+    renameDraft,
+    deleteDraft,
+  } = useDrafts();
 
   const [viewingBill, setViewingBill] = useState<BillDocument | null>(null);
+  const wasBillInLiveListRef = useRef(false);
 
   const dashboardPath = useCallback(() => {
     const p = new URLSearchParams();
@@ -45,19 +59,46 @@ function DashboardContent() {
   }, [tabParam]);
 
   useEffect(() => {
+    wasBillInLiveListRef.current = false;
+  }, [viewBillId]);
+
+  useEffect(() => {
     if (!viewBillId) {
       setViewingBill(null);
       return;
     }
-    const bill = bills.find((b) => b.id === viewBillId);
-    if (bill) {
-      setViewingBill(bill);
+    const fromList = bills.find((b) => b.id === viewBillId);
+    if (fromList) {
+      wasBillInLiveListRef.current = true;
+      setViewingBill(fromList);
       return;
     }
-    fetchBill(viewBillId).then((b) => setViewingBill(b ?? null));
-  }, [viewBillId, bills, fetchBill]);
+    if (wasBillInLiveListRef.current && !billsLoading) {
+      wasBillInLiveListRef.current = false;
+      setViewingBill(null);
+    }
+  }, [viewBillId, bills, billsLoading]);
+
+  /* Fetch once per viewBillId when the id is not in the live list yet.
+   * Omitting `bills` avoids re-running getDoc on every snapshot update (exhaustive-deps). */
+  useEffect(() => {
+    if (!viewBillId) return;
+    if (bills.some((b) => b.id === viewBillId)) return;
+
+    let cancelled = false;
+    void fetchBill(viewBillId).then((b) => {
+      if (cancelled) return;
+      setViewingBill(b ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- bills intentionally omitted; see comment above
+  }, [viewBillId, fetchBill]);
 
   const loading = billsLoading || draftsLoading;
+  const listError =
+    [billsError, draftsError].filter(Boolean).join(" · ") || null;
 
   const closeModal = () => {
     router.replace(dashboardPath());
@@ -132,6 +173,16 @@ function DashboardContent() {
           </div>
 
           <DashboardStats bills={bills} drafts={drafts} />
+
+          {listError && (
+            <div
+              className="mb-6 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+              role="alert"
+            >
+              <p className="font-medium">Could not load live data</p>
+              <p className="mt-1 text-destructive/90">{listError}</p>
+            </div>
+          )}
 
           {section === "overview" && (
             <>
