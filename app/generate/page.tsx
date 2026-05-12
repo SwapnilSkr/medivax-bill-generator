@@ -133,6 +133,23 @@ function GenerateContent() {
     }
   };
 
+  const handleExportCsv = async (): Promise<void> => {
+    try {
+      const { exportBillToCsv } = await import("@/utils/exportBillCsv");
+      await exportBillToCsv({
+        billInfo,
+        items,
+        showGst: includeGst,
+      });
+      showMessage("success", "CSV downloaded.");
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to export CSV";
+      showMessage("error", msg);
+      console.error("Export CSV error:", err);
+    }
+  };
+
   const getBillDisplayName = () => {
     const no = billInfo.billNo || "Draft";
     const date = billInfo.billDate || new Date().toISOString().split("T")[0];
@@ -269,6 +286,7 @@ function GenerateContent() {
         onPrint={handlePrintClick}
         onExportPDF={handleExportPDF}
         onExportExcel={handleExportExcel}
+        onExportCsv={handleExportCsv}
         onSaveBill={handleSaveBill}
         onSaveDraft={() => setSaveDraftModalOpen(true)}
         onReset={reset}
