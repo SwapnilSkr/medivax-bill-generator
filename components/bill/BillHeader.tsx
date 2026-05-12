@@ -1,34 +1,23 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { BillInfoType } from "@/types/bill";
+import {
+  formatBillDateForInvoice,
+  SELLER_ADDRESS,
+  SELLER_DL_NO,
+  SELLER_GSTIN,
+  SELLER_MOBILE,
+  SELLER_STATE,
+  STATE_CODE,
+} from "@/lib/invoiceConstants";
 
 interface BillHeaderProps {
   billInfo: BillInfoType;
   showGst?: boolean;
 }
 
-const SELLER_GSTIN = "19HGRPS5830J1ZF";
-/** Seller drug licence numbers (Medivax Pharma) */
-const SELLER_DL_NO = "WB/HWH/BIO/W/792998";
-const SELLER_ADDRESS =
-  "14 DR. RAJKUMAR KUNDU LANE, SHIBTALA, HOWRAH - 711102";
-const SELLER_MOBILE = "8777219601 / 7980076433";
-const SELLER_STATE = "West Bengal";
-const STATE_CODE = "19";
-
 const cell =
   "border-b border-slate-800 md:border-b-0 md:border-r md:last:border-r-0 print:border-b-0 print:border-r print:last:border-r-0 border-slate-800 p-1.5 leading-snug align-top text-slate-900";
-
-function formatBillDate(iso: string): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "2-digit",
-  });
-}
 
 export default function BillHeader({ billInfo, showGst = true }: BillHeaderProps) {
   const metaRow = (label: string, value: string) => (
@@ -130,12 +119,12 @@ export default function BillHeader({ billInfo, showGst = true }: BillHeaderProps
             <table className="h-full w-full border-collapse text-left">
               <tbody>
                 {metaRow("Invoice No.", billInfo.billNo)}
-                {metaRow("Dated", formatBillDate(billInfo.billDate))}
+                {metaRow("Dated", formatBillDateForInvoice(billInfo.billDate))}
                 {metaRow("Time", billInfo.billTime || "—")}
                 {metaRow("Mode / Terms", billInfo.mode)}
                 {metaRow("Delivered By", billInfo.deliveredBy || "—")}
                 {metaRow("Sales Person", billInfo.salesPerson || "—")}
-                {metaRow("Order Date", formatBillDate(billInfo.billDate))}
+                {metaRow("Order Date", formatBillDateForInvoice(billInfo.billDate))}
               </tbody>
             </table>
           </div>

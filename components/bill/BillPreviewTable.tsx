@@ -13,14 +13,14 @@ interface BillPreviewTableProps {
   gst: GstBreakdown | null;
 }
 
-/** Percent widths (GST on); sum = 100. Wide EXP / MRP / Amt to prevent overlap in print/PDF. */
+/** Percent widths (GST on); sum = 100. Wider MFG/Batch; narrower Amount. */
 const COLS_WITH_GST = [
-  2, 11, 7, 4, 5, 4, 4, 6, 10, 10, 5, 10, 22,
+  2, 11, 7, 4, 9, 4, 4, 9, 10, 10, 5, 10, 14,
 ] as const;
 
 /** 12 columns when GST column hidden */
 const COLS_NO_GST = [
-  2, 15, 8, 6, 5, 4, 4, 8, 11, 5, 11, 21,
+  2, 15, 8, 10, 5, 4, 4, 11, 11, 5, 11, 13,
 ] as const;
 
 const thCls =
