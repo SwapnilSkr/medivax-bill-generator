@@ -118,10 +118,6 @@ export default function BillHeader({ billInfo, showGst = true }: BillHeaderProps
             </p>
             {showGst && billInfo.gstNo && (
               <>
-                <p className="mt-1">
-                  <span className="font-semibold">GSTIN / UIN:</span>{" "}
-                  {billInfo.gstNo}
-                </p>
                 <p>
                   <span className="font-semibold">State Name:</span> {SELLER_STATE},
                   Code: {STATE_CODE}
