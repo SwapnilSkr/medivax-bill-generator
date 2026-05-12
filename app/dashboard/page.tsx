@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useCallback, useRef } from "react";
+import { useState, useEffect, Suspense, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ChevronRight, Plus } from "lucide-react";
@@ -15,6 +15,8 @@ import { BillsTable, DraftsTable } from "@/components/dashboard/DashboardTable";
 import BillListView from "@/components/dashboard/BillListView";
 import type { BillDocument } from "@/types/bill";
 import { cn } from "@/lib/utils";
+import { defaultDashboardDateFilter } from "@/lib/dashboardMonthFilter";
+import { filterBillsForToolbar, filterDraftsForToolbar } from "@/lib/dashboardTableFilters";
 
 type DashboardSection = "overview" | "bills" | "drafts";
 
@@ -49,6 +51,20 @@ function DashboardContent() {
 
   const [viewingBill, setViewingBill] = useState<BillDocument | null>(null);
   const wasBillInLiveListRef = useRef(false);
+
+  const [invoiceSearch, setInvoiceSearch] = useState("");
+  const [invoiceDateFilter, setInvoiceDateFilter] = useState(defaultDashboardDateFilter);
+  const [draftSearch, setDraftSearch] = useState("");
+  const [draftDateFilter, setDraftDateFilter] = useState(defaultDashboardDateFilter);
+
+  const scopedBills = useMemo(
+    () => filterBillsForToolbar(bills, invoiceDateFilter, invoiceSearch),
+    [bills, invoiceDateFilter, invoiceSearch],
+  );
+  const scopedDrafts = useMemo(
+    () => filterDraftsForToolbar(drafts, draftDateFilter, draftSearch),
+    [drafts, draftDateFilter, draftSearch],
+  );
 
   const dashboardPath = useCallback(() => {
     const p = new URLSearchParams();
@@ -140,8 +156,8 @@ function DashboardContent() {
                 {(
                   [
                     ["overview", "Overview"],
-                    ["bills", `Invoices (${bills.length})`],
-                    ["drafts", `Drafts (${drafts.length})`],
+                    ["bills", `Invoices (${scopedBills.length})`],
+                    ["drafts", `Drafts (${scopedDrafts.length})`],
                   ] as const
                 ).map(([key, label]) => (
                   <button
@@ -172,7 +188,7 @@ function DashboardContent() {
             </div>
           </div>
 
-          <DashboardStats bills={bills} drafts={drafts} />
+          <DashboardStats bills={scopedBills} drafts={scopedDrafts} />
 
           {listError && (
             <div
@@ -186,8 +202,8 @@ function DashboardContent() {
 
           {section === "overview" && (
             <>
-              <DashboardAnalytics bills={bills} />
-              <DashboardRecentInvoices bills={bills} onViewAll={() => goToSection("bills")} />
+              <DashboardAnalytics bills={scopedBills} />
+              <DashboardRecentInvoices bills={scopedBills} onViewAll={() => goToSection("bills")} />
             </>
           )}
 
@@ -198,9 +214,25 @@ function DashboardContent() {
                   <p className="text-sm text-muted-foreground">Loading records…</p>
                 </div>
               ) : section === "bills" ? (
-                <BillsTable bills={bills} onRename={renameBill} onDelete={deleteBill} />
+                <BillsTable
+                  bills={bills}
+                  search={invoiceSearch}
+                  onSearchChange={setInvoiceSearch}
+                  dateFilter={invoiceDateFilter}
+                  onDateFilterChange={setInvoiceDateFilter}
+                  onRename={renameBill}
+                  onDelete={deleteBill}
+                />
               ) : (
-                <DraftsTable drafts={drafts} onRename={renameDraft} onDelete={deleteDraft} />
+                <DraftsTable
+                  drafts={drafts}
+                  search={draftSearch}
+                  onSearchChange={setDraftSearch}
+                  dateFilter={draftDateFilter}
+                  onDateFilterChange={setDraftDateFilter}
+                  onRename={renameDraft}
+                  onDelete={deleteDraft}
+                />
               )}
             </>
           )}
