@@ -5,7 +5,13 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useReactToPrint } from "react-to-print";
 import { useBill } from "@/hooks/useBill";
-import { getBill, getDraft, saveBill, saveDraft } from "@/lib/firebase";
+import {
+  deleteDraft,
+  getBill,
+  getDraft,
+  saveBill,
+  saveDraft,
+} from "@/lib/firebase";
 import { exportToPDF } from "@/utils/pdf";
 import BillForm from "@/components/bill/BillForm";
 import ItemsTable from "@/components/bill/ItemsTable";
@@ -110,6 +116,23 @@ function GenerateContent() {
     await exportToPDF(input, orientation);
   };
 
+  const handleExportExcel = async (): Promise<void> => {
+    try {
+      const { exportBillToExcel } = await import("@/utils/exportBillExcel");
+      await exportBillToExcel({
+        billInfo,
+        items,
+        showGst: includeGst,
+      });
+      showMessage("success", "Excel downloaded.");
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to export Excel";
+      showMessage("error", msg);
+      console.error("Export Excel error:", err);
+    }
+  };
+
   const getBillDisplayName = () => {
     const no = billInfo.billNo || "Draft";
     const date = billInfo.billDate || new Date().toISOString().split("T")[0];
@@ -124,6 +147,7 @@ function GenerateContent() {
     const run = async () => {
       try {
         const displayName = getBillDisplayName();
+        const draftIdToRemove = draftIdRef.current;
         const id = await saveBill(billIdRef.current, {
           displayName,
           billInfo,
@@ -133,7 +157,26 @@ function GenerateContent() {
         });
         billIdRef.current = id;
         setEditingBillId(id);
-        showMessage("success", "Bill saved! View it in the Dashboard.");
+        let draftCleanupFailed = false;
+        if (draftIdToRemove) {
+          try {
+            await deleteDraft(draftIdToRemove);
+            draftIdRef.current = null;
+            setEditingDraftId(null);
+            setEditingDraftDisplayName("");
+          } catch (delErr) {
+            console.error("Delete draft after bill save:", delErr);
+            draftCleanupFailed = true;
+          }
+        }
+        if (draftCleanupFailed) {
+          showMessage(
+            "error",
+            "Bill saved, but the draft could not be removed. Try deleting it from the Dashboard.",
+          );
+        } else {
+          showMessage("success", "Bill saved! View it in the Dashboard.");
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Failed to save bill";
         showMessage("error", msg);
@@ -225,6 +268,7 @@ function GenerateContent() {
         onOrientationChange={setOrientation}
         onPrint={handlePrintClick}
         onExportPDF={handleExportPDF}
+        onExportExcel={handleExportExcel}
         onSaveBill={handleSaveBill}
         onSaveDraft={() => setSaveDraftModalOpen(true)}
         onReset={reset}

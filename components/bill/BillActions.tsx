@@ -16,6 +16,7 @@ interface BillActionsProps {
   onOrientationChange: (orientation: "portrait" | "landscape") => void;
   onPrint: () => void;
   onExportPDF: () => void;
+  onExportExcel: () => void | Promise<void>;
   onSaveBill: () => void | Promise<void>;
   onSaveDraft: () => void;
   onReset?: () => void;
@@ -29,6 +30,7 @@ export default function BillActions({
   onOrientationChange,
   onPrint,
   onExportPDF,
+  onExportExcel,
   onSaveBill,
   onSaveDraft,
   onReset,
@@ -105,6 +107,14 @@ export default function BillActions({
         </Button>
         <Button size="sm" onClick={onExportPDF} variant="secondary" className="bg-purple-600 text-white hover:bg-purple-700">
           Export as PDF
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onExportExcel}
+          className="border-emerald-700 text-emerald-800 hover:bg-emerald-50"
+        >
+          Export Excel
         </Button>
       </div>
     </div>
