@@ -18,11 +18,17 @@ export function useDrafts() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = subscribeDrafts((data) => {
-      setDrafts(data);
-      setLoading(false);
-      setError(null);
-    });
+    const unsubscribe = subscribeDrafts(
+      (data) => {
+        setDrafts(data);
+        setLoading(false);
+        setError(null);
+      },
+      (err) => {
+        setError(err.message);
+        setLoading(false);
+      },
+    );
     return () => unsubscribe();
   }, []);
 

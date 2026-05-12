@@ -18,11 +18,17 @@ export function useBills() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = subscribeBills((data) => {
-      setBills(data);
-      setLoading(false);
-      setError(null);
-    });
+    const unsubscribe = subscribeBills(
+      (data) => {
+        setBills(data);
+        setLoading(false);
+        setError(null);
+      },
+      (err) => {
+        setError(err.message);
+        setLoading(false);
+      },
+    );
     return () => unsubscribe();
   }, []);
 

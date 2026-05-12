@@ -34,22 +34,34 @@ function toDocument(data: BillOrDraftData) {
   };
 }
 
-function fromFirestore(
+/** Skip malformed docs from snapshots/lists so one bad record cannot break the UI. */
+function parseBillOrDraft(
   id: string,
   data: Record<string, unknown>,
-): BillDocument & { createdAt: Date; updatedAt: Date } {
-  const createdAt = data.createdAt as Timestamp;
-  const updatedAt = data.updatedAt as Timestamp;
-  return {
-    id,
-    displayName: data.displayName as string,
-    billInfo: data.billInfo as BillInfoType,
-    items: data.items as ItemType[],
-    orientation: data.orientation as "portrait" | "landscape",
-    includeGst: data.includeGst as boolean,
-    createdAt: createdAt?.toDate?.() ?? new Date(),
-    updatedAt: updatedAt?.toDate?.() ?? new Date(),
-  };
+): BillDocument | null {
+  try {
+    if (typeof data.displayName !== "string") return null;
+    if (!data.billInfo || typeof data.billInfo !== "object") return null;
+    if (!Array.isArray(data.items)) return null;
+    if (data.orientation !== "portrait" && data.orientation !== "landscape") {
+      return null;
+    }
+    if (typeof data.includeGst !== "boolean") return null;
+    const createdAt = data.createdAt as Timestamp | undefined;
+    const updatedAt = data.updatedAt as Timestamp | undefined;
+    return {
+      id,
+      displayName: data.displayName,
+      billInfo: data.billInfo as BillInfoType,
+      items: data.items as ItemType[],
+      orientation: data.orientation,
+      includeGst: data.includeGst,
+      createdAt: createdAt?.toDate?.() ?? new Date(),
+      updatedAt: updatedAt?.toDate?.() ?? new Date(),
+    };
+  } catch {
+    return null;
+  }
 }
 
 const BILLS_COLLECTION = "bills";
@@ -58,19 +70,23 @@ const DRAFTS_COLLECTION = "drafts";
 const FIRESTORE_TIMEOUT_MS = 15_000;
 
 function withTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<never>((_, reject) =>
-      setTimeout(
-        () =>
-          reject(
-            new Error(
-              `[Firebase] ${label} timed out after ${FIRESTORE_TIMEOUT_MS / 1000}s. Check network, firewall, or try a different network.`,
-            ),
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(
+      () =>
+        reject(
+          new Error(
+            `[Firebase] ${label} timed out after ${FIRESTORE_TIMEOUT_MS / 1000}s. Check network, firewall, or try a different network.`,
           ),
-        FIRESTORE_TIMEOUT_MS,
-      ),
-    ),
+        ),
+      FIRESTORE_TIMEOUT_MS,
+    );
+  });
+  return Promise.race([
+    promise.finally(() => {
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    }),
+    timeoutPromise,
   ]);
 }
 
@@ -90,7 +106,7 @@ export async function getBill(id: string): Promise<BillDocument | null> {
   const docRef = doc(db, BILLS_COLLECTION, id);
   const snap = await withTimeout(getDoc(docRef), "Bills get");
   if (!snap.exists()) return null;
-  return fromFirestore(snap.id, snap.data()) as BillDocument;
+  return parseBillOrDraft(snap.id, snap.data());
 }
 
 export async function updateBill(
@@ -127,24 +143,31 @@ export async function listBills(): Promise<BillDocument[]> {
     orderBy("updatedAt", "desc"),
   );
   const snapshot = await withTimeout(getDocs(q), "Bills list");
-  return snapshot.docs.map((d) =>
-    fromFirestore(d.id, d.data()),
-  ) as BillDocument[];
+  return snapshot.docs
+    .map((d) => parseBillOrDraft(d.id, d.data()))
+    .filter((b): b is BillDocument => b !== null);
 }
 
 export function subscribeBills(
   callback: (bills: BillDocument[]) => void,
+  onError?: (error: Error) => void,
 ): () => void {
   const q = query(
     collection(db, BILLS_COLLECTION),
     orderBy("updatedAt", "desc"),
   );
-  return onSnapshot(q, (snapshot) => {
-    const bills = snapshot.docs.map((d) =>
-      fromFirestore(d.id, d.data()),
-    ) as BillDocument[];
-    callback(bills);
-  });
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const bills = snapshot.docs
+        .map((d) => parseBillOrDraft(d.id, d.data()))
+        .filter((b): b is BillDocument => b !== null);
+      callback(bills);
+    },
+    (err) => {
+      onError?.(err instanceof Error ? err : new Error(String(err)));
+    },
+  );
 }
 
 // Drafts CRUD
@@ -163,7 +186,7 @@ export async function getDraft(id: string): Promise<DraftDocument | null> {
   const docRef = doc(db, DRAFTS_COLLECTION, id);
   const snap = await withTimeout(getDoc(docRef), "Drafts get");
   if (!snap.exists()) return null;
-  return fromFirestore(snap.id, snap.data()) as DraftDocument;
+  return parseBillOrDraft(snap.id, snap.data());
 }
 
 export async function updateDraft(
@@ -200,24 +223,31 @@ export async function listDrafts(): Promise<DraftDocument[]> {
     orderBy("updatedAt", "desc"),
   );
   const snapshot = await withTimeout(getDocs(q), "Drafts list");
-  return snapshot.docs.map((d) =>
-    fromFirestore(d.id, d.data()),
-  ) as DraftDocument[];
+  return snapshot.docs
+    .map((d) => parseBillOrDraft(d.id, d.data()))
+    .filter((d): d is DraftDocument => d !== null);
 }
 
 export function subscribeDrafts(
   callback: (drafts: DraftDocument[]) => void,
+  onError?: (error: Error) => void,
 ): () => void {
   const q = query(
     collection(db, DRAFTS_COLLECTION),
     orderBy("updatedAt", "desc"),
   );
-  return onSnapshot(q, (snapshot) => {
-    const drafts = snapshot.docs.map((d) =>
-      fromFirestore(d.id, d.data()),
-    ) as DraftDocument[];
-    callback(drafts);
-  });
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const drafts = snapshot.docs
+        .map((d) => parseBillOrDraft(d.id, d.data()))
+        .filter((d): d is DraftDocument => d !== null);
+      callback(drafts);
+    },
+    (err) => {
+      onError?.(err instanceof Error ? err : new Error(String(err)));
+    },
+  );
 }
 
 // Save/update bill with full document (for create or update)
