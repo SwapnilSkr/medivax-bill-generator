@@ -13,8 +13,23 @@ import {
 import { Button } from "@/components/ui/button";
 import type { BillDocument, DraftDocument } from "@/types/bill";
 import { calculateTotal } from "@/utils/bill";
+import {
+  dashboardDateFilterIsActive,
+  defaultDashboardDateFilter,
+  draftMatchesDashboardFilter,
+  invoiceMatchesDashboardFilter,
+} from "@/lib/dashboardMonthFilter";
+import { DashboardDateFilterBar } from "./DashboardMonthPicker";
 import RenameModal from "./RenameModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
+
+function SortGlyph({ active }: { active: boolean }) {
+  return (
+    <ArrowUpDown
+      className={`size-3 ml-1 inline ${active ? "opacity-100" : "opacity-40"}`}
+    />
+  );
+}
 
 interface BillsTableProps {
   bills: BillDocument[];
@@ -30,6 +45,7 @@ interface DraftsTableProps {
 
 export function BillsTable({ bills, onRename, onDelete }: BillsTableProps) {
   const [search, setSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState(defaultDashboardDateFilter);
   const [sortField, setSortField] = useState<"displayName" | "billDate" | "total">("billDate");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [renameModalOpen, setRenameModalOpen] = useState(false);
@@ -39,6 +55,9 @@ export function BillsTable({ bills, onRename, onDelete }: BillsTableProps) {
 
   const filteredBills = bills
     .filter((bill) => {
+      if (!invoiceMatchesDashboardFilter(bill.billInfo.billDate, dateFilter)) {
+        return false;
+      }
       const searchLower = search.toLowerCase();
       return (
         bill.displayName.toLowerCase().includes(searchLower) ||
@@ -67,26 +86,37 @@ export function BillsTable({ bills, onRename, onDelete }: BillsTableProps) {
     }
   };
 
-  const SortIcon = ({ field }: { field: "displayName" | "billDate" | "total" }) => (
-    <ArrowUpDown className={`size-3 ml-1 inline ${sortField === field ? "opacity-100" : "opacity-40"}`} />
-  );
-
   const currentBill = bills.find((b) => b.id === renameModalId);
+  const hasActiveFilters = dashboardDateFilterIsActive(dateFilter) || Boolean(search.trim());
+  const emptyMessage =
+    bills.length > 0 && filteredBills.length === 0 && hasActiveFilters
+      ? "No invoices match your filters."
+      : "No bills found";
 
   return (
     <div className="rounded-2xl border border-border/70 bg-card shadow-sm overflow-hidden">
-      <div className="p-4 border-b flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search bills..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-md border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      <div className="p-4 border-b flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-1 sm:items-end sm:gap-3 min-w-0">
+          <div className="relative flex-1 min-w-0 max-w-sm">
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search bills..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              autoComplete="off"
+              className="w-full pl-9 pr-4 py-2 rounded-md border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+          <DashboardDateFilterBar
+            prefixId="invoices"
+            primaryLabel="Bill month"
+            hint="Quick month (last 24 months) or a custom range on the calendar. Matches each invoice’s bill date."
+            value={dateFilter}
+            onChange={setDateFilter}
           />
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground sm:shrink-0 sm:pb-0.5">
           {filteredBills.length} bill{filteredBills.length !== 1 ? "s" : ""}
         </p>
       </div>
@@ -100,7 +130,7 @@ export function BillsTable({ bills, onRename, onDelete }: BillsTableProps) {
                 onClick={() => handleSort("displayName")}
               >
                 <span className="flex items-center">
-                  Name <SortIcon field="displayName" />
+                  Name <SortGlyph active={sortField === "displayName"} />
                 </span>
               </th>
               <th
@@ -108,7 +138,7 @@ export function BillsTable({ bills, onRename, onDelete }: BillsTableProps) {
                 onClick={() => handleSort("billDate")}
               >
                 <span className="flex items-center">
-                  Bill Date <SortIcon field="billDate" />
+                  Bill Date <SortGlyph active={sortField === "billDate"} />
                 </span>
               </th>
               <th className="px-4 py-3">Customer</th>
@@ -117,7 +147,7 @@ export function BillsTable({ bills, onRename, onDelete }: BillsTableProps) {
                 onClick={() => handleSort("total")}
               >
                 <span className="flex items-center justify-end">
-                  Amount <SortIcon field="total" />
+                  Amount <SortGlyph active={sortField === "total"} />
                 </span>
               </th>
               <th className="px-4 py-3 text-right">Actions</th>
@@ -127,7 +157,7 @@ export function BillsTable({ bills, onRename, onDelete }: BillsTableProps) {
             {filteredBills.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                  No bills found
+                  {emptyMessage}
                 </td>
               </tr>
             ) : (
@@ -220,6 +250,7 @@ export function BillsTable({ bills, onRename, onDelete }: BillsTableProps) {
 
 export function DraftsTable({ drafts, onRename, onDelete }: DraftsTableProps) {
   const [search, setSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState(defaultDashboardDateFilter);
   const [sortField, setSortField] = useState<"displayName" | "updatedAt">("updatedAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [renameModalOpen, setRenameModalOpen] = useState(false);
@@ -229,6 +260,15 @@ export function DraftsTable({ drafts, onRename, onDelete }: DraftsTableProps) {
 
   const filteredDrafts = drafts
     .filter((draft) => {
+      if (
+        !draftMatchesDashboardFilter(
+          draft.billInfo.billDate,
+          new Date(draft.updatedAt),
+          dateFilter,
+        )
+      ) {
+        return false;
+      }
       const searchLower = search.toLowerCase();
       return (
         draft.displayName.toLowerCase().includes(searchLower) ||
@@ -255,26 +295,41 @@ export function DraftsTable({ drafts, onRename, onDelete }: DraftsTableProps) {
     }
   };
 
-  const SortIcon = ({ field }: { field: "displayName" | "updatedAt" }) => (
-    <ArrowUpDown className={`size-3 ml-1 inline ${sortField === field ? "opacity-100" : "opacity-40"}`} />
-  );
-
   const currentDraft = drafts.find((d) => d.id === renameModalId);
+  const hasActiveFilters = dashboardDateFilterIsActive(dateFilter) || Boolean(search.trim());
+  const emptyMessage =
+    drafts.length > 0 && filteredDrafts.length === 0 && hasActiveFilters
+      ? "No drafts match your filters."
+      : "No drafts found";
 
   return (
     <div className="rounded-2xl border border-border/70 bg-card shadow-sm overflow-hidden">
-      <div className="p-4 border-b flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search drafts..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-md border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      <div className="p-4 border-b flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-1 sm:items-end sm:gap-3 min-w-0">
+          <div className="relative flex-1 min-w-0 max-w-sm">
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search drafts..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              autoComplete="off"
+              className="w-full pl-9 pr-4 py-2 rounded-md border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+          <p className="sr-only" id="drafts-month-hint">
+            Bill date when set; otherwise last modified.
+          </p>
+          <DashboardDateFilterBar
+            prefixId="drafts"
+            primaryLabel="Month"
+            hint="Quick month or custom range. Uses bill date when set; otherwise the last-saved date."
+            value={dateFilter}
+            onChange={setDateFilter}
+            descriptionId="drafts-month-hint"
           />
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground sm:shrink-0 sm:pb-0.5">
           {filteredDrafts.length} draft{filteredDrafts.length !== 1 ? "s" : ""}
         </p>
       </div>
@@ -288,7 +343,7 @@ export function DraftsTable({ drafts, onRename, onDelete }: DraftsTableProps) {
                 onClick={() => handleSort("displayName")}
               >
                 <span className="flex items-center">
-                  Name <SortIcon field="displayName" />
+                  Name <SortGlyph active={sortField === "displayName"} />
                 </span>
               </th>
               <th className="px-4 py-3">Bill No</th>
@@ -299,7 +354,7 @@ export function DraftsTable({ drafts, onRename, onDelete }: DraftsTableProps) {
                 onClick={() => handleSort("updatedAt")}
               >
                 <span className="flex items-center">
-                  Last Modified <SortIcon field="updatedAt" />
+                  Last Modified <SortGlyph active={sortField === "updatedAt"} />
                 </span>
               </th>
               <th className="px-4 py-3 text-right">Actions</th>
@@ -309,7 +364,7 @@ export function DraftsTable({ drafts, onRename, onDelete }: DraftsTableProps) {
             {filteredDrafts.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  No drafts found
+                  {emptyMessage}
                 </td>
               </tr>
             ) : (
