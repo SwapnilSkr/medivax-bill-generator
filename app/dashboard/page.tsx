@@ -12,7 +12,9 @@ import DashboardStats from "@/components/dashboard/DashboardStats";
 import DashboardAnalytics from "@/components/dashboard/DashboardAnalytics";
 import DashboardRecentInvoices from "@/components/dashboard/DashboardRecentInvoices";
 import { BillsTable, DraftsTable } from "@/components/dashboard/DashboardTable";
+import DashboardInventory from "@/components/dashboard/DashboardInventory";
 import { ViewBillDialog } from "@/components/dashboard/ViewBillDialog";
+import { useInventory } from "@/hooks/useInventory";
 import type { BillDocument } from "@/types/bill";
 import { cn } from "@/lib/utils";
 import { defaultDashboardDateFilter } from "@/lib/dashboardMonthFilter";
@@ -20,11 +22,12 @@ import { filterBillsForToolbar, filterDraftsForToolbar } from "@/lib/dashboardTa
 import { appToastError } from "@/lib/app-toast";
 import { buildDashboardUrl } from "@/lib/dashboardUrl";
 
-type DashboardSection = "overview" | "bills" | "drafts";
+type DashboardSection = "overview" | "bills" | "drafts" | "inventory";
 
 function sectionFromSearchParams(tab: string | null): DashboardSection {
   if (tab === "drafts") return "drafts";
   if (tab === "bills") return "bills";
+  if (tab === "inventory") return "inventory";
   return "overview";
 }
 
@@ -50,6 +53,15 @@ function DashboardContent() {
     renameDraft,
     deleteDraft,
   } = useDrafts();
+  const {
+    items: inventoryItems,
+    loading: inventoryLoading,
+    error: inventoryError,
+    addItem: addInventoryItem,
+    updateItem: updateInventoryItem,
+    removeItem: removeInventoryItem,
+    adjustStock,
+  } = useInventory();
 
   const [viewingBill, setViewingBill] = useState<BillDocument | null>(null);
   const wasBillInLiveListRef = useRef(false);
@@ -123,7 +135,7 @@ function DashboardContent() {
 
   const loading = billsLoading || draftsLoading;
   const listError =
-    [billsError, draftsError].filter(Boolean).join(" · ") || null;
+    [billsError, draftsError, inventoryError].filter(Boolean).join(" · ") || null;
 
   useEffect(() => {
     if (!listError) {
@@ -157,7 +169,9 @@ function DashboardContent() {
       ? { title: "Operations overview", hint: "KPIs, billing analytics, and latest invoices" }
       : section === "bills"
         ? { title: "Invoices", hint: "Search, edit, and export posted bills" }
-        : { title: "Drafts", hint: "Continue work-in-progress before posting" };
+        : section === "drafts"
+          ? { title: "Drafts", hint: "Continue work-in-progress before posting" }
+          : { title: "Vaccine inventory", hint: "Track stock, pricing, and availability for billing" };
 
   return (
     <div className="flex h-dvh min-h-0 overflow-hidden bg-muted/40">
@@ -185,6 +199,7 @@ function DashboardContent() {
                     ["overview", "Overview"],
                     ["bills", `Invoices (${scopedBills.length})`],
                     ["drafts", `Drafts (${scopedDrafts.length})`],
+                    ["inventory", `Inventory (${inventoryItems.length})`],
                   ] as const
                 ).map(([key, label]) => (
                   <button
@@ -215,7 +230,9 @@ function DashboardContent() {
             </div>
           </div>
 
-          <DashboardStats bills={scopedBills} drafts={scopedDrafts} />
+          {section !== "inventory" && (
+            <DashboardStats bills={scopedBills} drafts={scopedDrafts} />
+          )}
 
           {section === "overview" && (
             <>
@@ -228,7 +245,18 @@ function DashboardContent() {
             </>
           )}
 
-          {section !== "overview" && (
+          {section === "inventory" && (
+            <DashboardInventory
+              items={inventoryItems}
+              loading={inventoryLoading}
+              onAdd={addInventoryItem}
+              onUpdate={updateInventoryItem}
+              onDelete={removeInventoryItem}
+              onAdjustStock={adjustStock}
+            />
+          )}
+
+          {section !== "overview" && section !== "inventory" && (
             <>
               {loading ? (
                 <div className="rounded-2xl border border-border/70 bg-card p-12 text-center shadow-sm">

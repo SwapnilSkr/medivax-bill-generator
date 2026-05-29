@@ -3,19 +3,23 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { LayoutDashboard, FileText, FileEdit, Plus, Home } from "lucide-react";
+import { LayoutDashboard, FileText, FileEdit, Plus, Home, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const mainNav = [
   { label: "Overview", href: "/dashboard", match: "overview" as const },
   { label: "Invoices", href: "/dashboard?tab=bills", match: "bills" as const },
   { label: "Drafts", href: "/dashboard?tab=drafts", match: "drafts" as const },
+  { label: "Inventory", href: "/dashboard?tab=inventory", match: "inventory" as const },
 ];
 
-function currentSection(searchParams: URLSearchParams): "overview" | "bills" | "drafts" {
+function currentSection(
+  searchParams: URLSearchParams,
+): "overview" | "bills" | "drafts" | "inventory" {
   const t = searchParams.get("tab");
   if (t === "drafts") return "drafts";
   if (t === "bills") return "bills";
+  if (t === "inventory") return "inventory";
   return "overview";
 }
 
@@ -64,6 +68,7 @@ export default function DashboardSidebar() {
               {item.match === "overview" && <LayoutDashboard className="size-4 shrink-0 opacity-90" />}
               {item.match === "bills" && <FileText className="size-4 shrink-0 opacity-90" />}
               {item.match === "drafts" && <FileEdit className="size-4 shrink-0 opacity-90" />}
+              {item.match === "inventory" && <Package className="size-4 shrink-0 opacity-90" />}
               {item.label}
             </Link>
           );
