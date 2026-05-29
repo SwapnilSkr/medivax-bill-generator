@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed:inventory": "tsx --env-file=.env.local scripts/seed-inventory.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.2",
@@ -44,6 +45,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
     "tailwindcss": "^4.0.17",
+    "tsx": "^4.19.4",
     "typescript": "^5"
   }
 }

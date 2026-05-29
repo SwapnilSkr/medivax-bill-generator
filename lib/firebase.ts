@@ -10,6 +10,7 @@ import {
   query,
   orderBy,
   Timestamp,
+  runTransaction,
 } from "firebase/firestore";
 import { db } from "@/firebase.config";
 import type {
@@ -18,13 +19,27 @@ import type {
   BillDocument,
   DraftDocument,
 } from "@/types/bill";
+import type {
+  InventoryAdjustment,
+  InventoryItem,
+  InventoryItemInput,
+} from "@/types/inventory";
+import { INVENTORY_COLLECTION } from "@/lib/inventoryConstants";
+import {
+  computeInventoryAdjustments,
+  computeInventoryDeltas,
+  validateInventoryDeltas,
+} from "@/utils/inventory";
 
 export type { BillDocument, DraftDocument };
 
-type BillOrDraftData = Omit<BillDocument, "id" | "createdAt" | "updatedAt">;
+type BillOrDraftData = Omit<
+  BillDocument,
+  "id" | "createdAt" | "updatedAt"
+>;
 
 function toDocument(data: BillOrDraftData) {
-  return {
+  const docData: Record<string, unknown> = {
     displayName: data.displayName,
     billInfo: data.billInfo,
     items: data.items,
@@ -32,6 +47,10 @@ function toDocument(data: BillOrDraftData) {
     includeGst: data.includeGst,
     updatedAt: Timestamp.now(),
   };
+  if (data.inventoryAdjustments !== undefined) {
+    docData.inventoryAdjustments = data.inventoryAdjustments;
+  }
+  return docData;
 }
 
 /** Skip malformed docs from snapshots/lists so one bad record cannot break the UI. */
@@ -49,6 +68,9 @@ function parseBillOrDraft(
     if (typeof data.includeGst !== "boolean") return null;
     const createdAt = data.createdAt as Timestamp | undefined;
     const updatedAt = data.updatedAt as Timestamp | undefined;
+    const inventoryAdjustments = Array.isArray(data.inventoryAdjustments)
+      ? (data.inventoryAdjustments as InventoryAdjustment[])
+      : undefined;
     return {
       id,
       displayName: data.displayName,
@@ -56,6 +78,7 @@ function parseBillOrDraft(
       items: data.items as ItemType[],
       orientation: data.orientation,
       includeGst: data.includeGst,
+      inventoryAdjustments,
       createdAt: createdAt?.toDate?.() ?? new Date(),
       updatedAt: updatedAt?.toDate?.() ?? new Date(),
     };
@@ -133,6 +156,10 @@ export async function updateBillDisplayName(
 }
 
 export async function deleteBill(id: string): Promise<void> {
+  const bill = await getBill(id);
+  if (bill?.inventoryAdjustments?.length) {
+    await restoreInventoryAdjustments(bill.inventoryAdjustments);
+  }
   const docRef = doc(db, BILLS_COLLECTION, id);
   await withTimeout(deleteDoc(docRef), "Bills delete");
 }
@@ -282,4 +309,222 @@ export async function saveDraft(
     return id;
   }
   return createDraft(data);
+}
+
+// ─── Inventory ───────────────────────────────────────────────────────────────
+
+function parseInventoryItem(
+  id: string,
+  data: Record<string, unknown>,
+): InventoryItem | null {
+  try {
+    if (typeof data.name !== "string" || !data.name.trim()) return null;
+    if (typeof data.mrp !== "number" || typeof data.price !== "number") {
+      return null;
+    }
+    if (typeof data.quantity !== "number") return null;
+    const createdAt = data.createdAt as Timestamp | undefined;
+    const updatedAt = data.updatedAt as Timestamp | undefined;
+    return {
+      id,
+      name: data.name,
+      mrp: data.mrp,
+      price: data.price,
+      quantity: data.quantity,
+      hsn: typeof data.hsn === "string" ? data.hsn : undefined,
+      mfg: typeof data.mfg === "string" ? data.mfg : undefined,
+      lowStockThreshold:
+        typeof data.lowStockThreshold === "number"
+          ? data.lowStockThreshold
+          : undefined,
+      createdAt: createdAt?.toDate?.() ?? new Date(),
+      updatedAt: updatedAt?.toDate?.() ?? new Date(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function subscribeInventory(
+  callback: (items: InventoryItem[]) => void,
+  onError?: (error: Error) => void,
+): () => void {
+  const q = query(
+    collection(db, INVENTORY_COLLECTION),
+    orderBy("name", "asc"),
+  );
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const items = snapshot.docs
+        .map((d) => parseInventoryItem(d.id, d.data()))
+        .filter((i): i is InventoryItem => i !== null);
+      callback(items);
+    },
+    (err) => {
+      onError?.(err instanceof Error ? err : new Error(String(err)));
+    },
+  );
+}
+
+export async function createInventoryItem(
+  data: InventoryItemInput,
+): Promise<string> {
+  const docRef = await withTimeout(
+    addDoc(collection(db, INVENTORY_COLLECTION), {
+      name: data.name.trim(),
+      mrp: data.mrp,
+      price: data.price,
+      quantity: data.quantity,
+      hsn: data.hsn ?? "",
+      mfg: data.mfg ?? "",
+      lowStockThreshold: data.lowStockThreshold ?? 5,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    }),
+    "Inventory create",
+  );
+  return docRef.id;
+}
+
+export async function updateInventoryItem(
+  id: string,
+  data: InventoryItemInput,
+): Promise<void> {
+  const docRef = doc(db, INVENTORY_COLLECTION, id);
+  await withTimeout(
+    updateDoc(docRef, {
+      name: data.name.trim(),
+      mrp: data.mrp,
+      price: data.price,
+      quantity: data.quantity,
+      hsn: data.hsn ?? "",
+      mfg: data.mfg ?? "",
+      lowStockThreshold: data.lowStockThreshold ?? 5,
+      updatedAt: Timestamp.now(),
+    }),
+    "Inventory update",
+  );
+}
+
+export async function deleteInventoryItem(id: string): Promise<void> {
+  const docRef = doc(db, INVENTORY_COLLECTION, id);
+  await withTimeout(deleteDoc(docRef), "Inventory delete");
+}
+
+export async function adjustInventoryQuantity(
+  id: string,
+  delta: number,
+): Promise<void> {
+  const docRef = doc(db, INVENTORY_COLLECTION, id);
+  await withTimeout(
+    runTransaction(db, async (transaction) => {
+      const snap = await transaction.get(docRef);
+      if (!snap.exists()) throw new Error("Vaccine not found in inventory.");
+      const current = snap.data().quantity as number;
+      const next = current + delta;
+      if (next < 0) {
+        throw new Error("Stock cannot go below zero.");
+      }
+      transaction.update(docRef, {
+        quantity: next,
+        updatedAt: Timestamp.now(),
+      });
+    }),
+    "Inventory adjust",
+  );
+}
+
+async function restoreInventoryAdjustments(
+  adjustments: InventoryAdjustment[],
+): Promise<void> {
+  if (!adjustments.length) return;
+  await withTimeout(
+    runTransaction(db, async (transaction) => {
+      for (const { inventoryId, qty } of adjustments) {
+        if (qty <= 0) continue;
+        const ref = doc(db, INVENTORY_COLLECTION, inventoryId);
+        const snap = await transaction.get(ref);
+        if (!snap.exists()) continue;
+        const current = snap.data().quantity as number;
+        transaction.update(ref, {
+          quantity: current + qty,
+          updatedAt: Timestamp.now(),
+        });
+      }
+    }),
+    "Inventory restore",
+  );
+}
+
+export class InventoryStockError extends Error {
+  issues: { name: string; requested: number; available: number }[];
+
+  constructor(
+    message: string,
+    issues: { name: string; requested: number; available: number }[],
+  ) {
+    super(message);
+    this.name = "InventoryStockError";
+    this.issues = issues;
+  }
+}
+
+/**
+ * Reconcile inventory when a bill is posted or updated.
+ * Returns the adjustments to store on the bill document.
+ */
+export async function syncInventoryForBill(
+  items: ItemType[],
+  previousAdjustments: InventoryAdjustment[] | undefined,
+): Promise<InventoryAdjustment[]> {
+  const nextAdjustments = computeInventoryAdjustments(items);
+  const deltas = computeInventoryDeltas(
+    previousAdjustments ?? [],
+    nextAdjustments,
+  );
+
+  if (deltas.size === 0) return nextAdjustments;
+
+  await withTimeout(
+    runTransaction(db, async (transaction) => {
+      const inventoryById = new Map<string, InventoryItem>();
+
+      for (const inventoryId of deltas.keys()) {
+        const ref = doc(db, INVENTORY_COLLECTION, inventoryId);
+        const snap = await transaction.get(ref);
+        if (!snap.exists()) {
+          throw new Error(`Vaccine no longer in inventory (${inventoryId}).`);
+        }
+        const parsed = parseInventoryItem(snap.id, snap.data());
+        if (!parsed) throw new Error("Invalid inventory record.");
+        inventoryById.set(inventoryId, parsed);
+      }
+
+      const issues = validateInventoryDeltas(inventoryById, deltas);
+      if (issues.length > 0) {
+        throw new InventoryStockError(
+          "Not enough stock for one or more vaccines.",
+          issues.map((i) => ({
+            name: i.name,
+            requested: i.requested,
+            available: i.available,
+          })),
+        );
+      }
+
+      for (const [inventoryId, delta] of deltas) {
+        if (delta === 0) continue;
+        const ref = doc(db, INVENTORY_COLLECTION, inventoryId);
+        const current = inventoryById.get(inventoryId)!.quantity;
+        transaction.update(ref, {
+          quantity: current - delta,
+          updatedAt: Timestamp.now(),
+        });
+      }
+    }),
+    "Inventory sync for bill",
+  );
+
+  return nextAdjustments;
 }

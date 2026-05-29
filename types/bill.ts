@@ -27,7 +27,11 @@ export interface ItemType {
   disc: number | null;
   rate: number | null;
   amount: number | null;
+  /** Links row to inventory; not rendered on printed bill. */
+  inventoryId?: string | null;
 }
+
+import type { InventoryAdjustment } from "@/types/inventory";
 
 export interface BillDocument {
   id: string;
@@ -36,6 +40,8 @@ export interface BillDocument {
   items: ItemType[];
   orientation: "portrait" | "landscape";
   includeGst: boolean;
+  /** Stock deducted when this bill was posted; used to reconcile edits/deletes. */
+  inventoryAdjustments?: InventoryAdjustment[];
   createdAt: Date;
   updatedAt: Date;
 }
