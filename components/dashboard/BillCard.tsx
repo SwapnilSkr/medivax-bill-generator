@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Eye, Pencil, Trash2, Tag } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { DashboardRowActionsMenu } from "./DashboardRowActionsMenu";
 import type { BillDocument } from "@/types/bill";
-import { calculateTotal } from "@/utils/bill";
+import { getBillChargeAmount } from "@/utils/bill";
 import RenameModal from "./RenameModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 
@@ -13,6 +12,7 @@ interface BillCardProps {
   bill: BillDocument;
   onRename: (id: string, displayName: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onViewBill: (id: string) => void;
   renameModalOpen: boolean;
   renameModalId: string | null;
   onRenameModalOpen: (id: string) => void;
@@ -23,13 +23,14 @@ export default function BillCard({
   bill,
   onRename,
   onDelete,
+  onViewBill,
   renameModalOpen,
   renameModalId,
   onRenameModalOpen,
   onRenameModalClose,
 }: BillCardProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const total = calculateTotal(bill.items);
+  const total = getBillChargeAmount(bill.items, bill.includeGst);
   const isRenameTarget = renameModalId === bill.id;
 
   return (
@@ -45,35 +46,32 @@ export default function BillCard({
               ₹{total.toFixed(2)}
             </p>
           </div>
-          <div className="flex shrink-0 gap-1">
-            <Link href={`/dashboard?viewBill=${bill.id}`}>
-              <Button variant="ghost" size="icon" title="View">
-                <Eye className="size-4" />
-              </Button>
-            </Link>
-            <Link href={`/generate?billId=${bill.id}`}>
-              <Button variant="ghost" size="icon" title="Edit">
-                <Pencil className="size-4" />
-              </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Rename"
-              onClick={() => onRenameModalOpen(bill.id)}
-            >
-              <Tag className="size-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Delete"
-              onClick={() => setDeleteModalOpen(true)}
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </div>
+          <DashboardRowActionsMenu
+            items={[
+              {
+                label: "View bill",
+                icon: Eye,
+                onSelect: () => onViewBill(bill.id),
+              },
+              {
+                label: "Edit bill",
+                icon: Pencil,
+                href: `/generate?billId=${bill.id}`,
+              },
+              {
+                label: "Rename",
+                icon: Tag,
+                onSelect: () => onRenameModalOpen(bill.id),
+              },
+              {
+                label: "Delete",
+                icon: Trash2,
+                variant: "destructive",
+                separatorBefore: true,
+                onSelect: () => setDeleteModalOpen(true),
+              },
+            ]}
+          />
         </div>
       </div>
       {isRenameTarget && (

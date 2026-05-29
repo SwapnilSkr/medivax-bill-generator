@@ -1,18 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import {
-  Eye,
-  Pencil,
-  Trash2,
-  Tag,
-  Search,
-  ArrowUpDown,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Eye, Pencil, Trash2, Tag, Search, ArrowUpDown } from "lucide-react";
+import { DashboardRowActionsMenu } from "./DashboardRowActionsMenu";
 import type { BillDocument, DraftDocument } from "@/types/bill";
-import { calculateTotal } from "@/utils/bill";
+import { getBillChargeAmount } from "@/utils/bill";
 import {
   dashboardDateFilterIsActive,
   type DashboardDateFilter,
@@ -38,6 +30,7 @@ interface BillsTableProps {
   onDateFilterChange: (value: DashboardDateFilter) => void;
   onRename: (id: string, displayName: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onViewBill: (id: string) => void;
 }
 
 interface DraftsTableProps {
@@ -58,6 +51,7 @@ export function BillsTable({
   onDateFilterChange,
   onRename,
   onDelete,
+  onViewBill,
 }: BillsTableProps) {
   const [sortField, setSortField] = useState<"displayName" | "billDate" | "total">("billDate");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -75,7 +69,9 @@ export function BillsTable({
       } else if (sortField === "billDate") {
         comparison = (a.billInfo.billDate || "").localeCompare(b.billInfo.billDate || "");
       } else if (sortField === "total") {
-        comparison = calculateTotal(a.items) - calculateTotal(b.items);
+        comparison =
+          getBillChargeAmount(a.items, a.includeGst) -
+          getBillChargeAmount(b.items, b.includeGst);
       }
       return sortOrder === "asc" ? comparison : -comparison;
     });
@@ -187,43 +183,41 @@ export function BillsTable({
                     {bill.billInfo.doctorName || "—"}
                   </td>
                   <td className="px-4 py-3 text-sm text-right font-medium">
-                    ₹{calculateTotal(bill.items).toFixed(2)}
+                    ₹{getBillChargeAmount(bill.items, bill.includeGst).toFixed(2)}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Link href={`/dashboard?viewBill=${bill.id}`}>
-                        <Button variant="ghost" size="icon" className="size-8">
-                          <Eye className="size-4" />
-                        </Button>
-                      </Link>
-                      <Link href={`/generate?billId=${bill.id}`}>
-                        <Button variant="ghost" size="icon" className="size-8">
-                          <Pencil className="size-4" />
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        onClick={() => {
-                          setRenameModalId(bill.id);
-                          setRenameModalOpen(true);
-                        }}
-                      >
-                        <Tag className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 text-destructive hover:text-destructive"
-                        onClick={() => {
-                          setDeleteModalId(bill.id);
-                          setDeleteModalOpen(true);
-                        }}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
+                    <DashboardRowActionsMenu
+                      items={[
+                        {
+                          label: "View bill",
+                          icon: Eye,
+                          onSelect: () => onViewBill(bill.id),
+                        },
+                        {
+                          label: "Edit bill",
+                          icon: Pencil,
+                          href: `/generate?billId=${bill.id}`,
+                        },
+                        {
+                          label: "Rename",
+                          icon: Tag,
+                          onSelect: () => {
+                            setRenameModalId(bill.id);
+                            setRenameModalOpen(true);
+                          },
+                        },
+                        {
+                          label: "Delete",
+                          icon: Trash2,
+                          variant: "destructive",
+                          separatorBefore: true,
+                          onSelect: () => {
+                            setDeleteModalId(bill.id);
+                            setDeleteModalOpen(true);
+                          },
+                        },
+                      ]}
+                    />
                   </td>
                 </tr>
               ))
@@ -395,7 +389,7 @@ export function DraftsTable({
                     {draft.billInfo.doctorName || "—"}
                   </td>
                   <td className="px-4 py-3 text-sm text-right font-medium">
-                    ₹{calculateTotal(draft.items).toFixed(2)}
+                    ₹{getBillChargeAmount(draft.items, draft.includeGst).toFixed(2)}
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">
                     {new Date(draft.updatedAt).toLocaleDateString("en-IN", {
@@ -407,35 +401,33 @@ export function DraftsTable({
                     })}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Link href={`/generate?draftId=${draft.id}`}>
-                        <Button variant="ghost" size="icon" className="size-8">
-                          <Pencil className="size-4" />
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        onClick={() => {
-                          setRenameModalId(draft.id);
-                          setRenameModalOpen(true);
-                        }}
-                      >
-                        <Tag className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 text-destructive hover:text-destructive"
-                        onClick={() => {
-                          setDeleteModalId(draft.id);
-                          setDeleteModalOpen(true);
-                        }}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
+                    <DashboardRowActionsMenu
+                      items={[
+                        {
+                          label: "Continue editing",
+                          icon: Pencil,
+                          href: `/generate?draftId=${draft.id}`,
+                        },
+                        {
+                          label: "Rename",
+                          icon: Tag,
+                          onSelect: () => {
+                            setRenameModalId(draft.id);
+                            setRenameModalOpen(true);
+                          },
+                        },
+                        {
+                          label: "Delete",
+                          icon: Trash2,
+                          variant: "destructive",
+                          separatorBefore: true,
+                          onSelect: () => {
+                            setDeleteModalId(draft.id);
+                            setDeleteModalOpen(true);
+                          },
+                        },
+                      ]}
+                    />
                   </td>
                 </tr>
               ))

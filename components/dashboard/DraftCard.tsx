@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Play, Pencil, Trash2, Tag } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Pencil, Trash2, Tag } from "lucide-react";
+import { DashboardRowActionsMenu } from "./DashboardRowActionsMenu";
 import type { DraftDocument } from "@/types/bill";
-import { calculateTotal } from "@/utils/bill";
+import { getBillChargeAmount } from "@/utils/bill";
 import RenameModal from "./RenameModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 
@@ -29,7 +28,7 @@ export default function DraftCard({
   onRenameModalClose,
 }: DraftCardProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const total = calculateTotal(draft.items);
+  const total = getBillChargeAmount(draft.items, draft.includeGst);
   const isRenameTarget = renameModalId === draft.id;
 
   return (
@@ -45,35 +44,27 @@ export default function DraftCard({
               ₹{total.toFixed(2)}
             </p>
           </div>
-          <div className="flex shrink-0 gap-1">
-            <Link href={`/generate?draftId=${draft.id}`}>
-              <Button variant="ghost" size="icon" title="Resume">
-                <Play className="size-4" />
-              </Button>
-            </Link>
-            <Link href={`/generate?draftId=${draft.id}`}>
-              <Button variant="ghost" size="icon" title="Edit">
-                <Pencil className="size-4" />
-              </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Rename"
-              onClick={() => onRenameModalOpen(draft.id)}
-            >
-              <Tag className="size-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Delete"
-              onClick={() => setDeleteModalOpen(true)}
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </div>
+          <DashboardRowActionsMenu
+            items={[
+              {
+                label: "Continue editing",
+                icon: Pencil,
+                href: `/generate?draftId=${draft.id}`,
+              },
+              {
+                label: "Rename",
+                icon: Tag,
+                onSelect: () => onRenameModalOpen(draft.id),
+              },
+              {
+                label: "Delete",
+                icon: Trash2,
+                variant: "destructive",
+                separatorBefore: true,
+                onSelect: () => setDeleteModalOpen(true),
+              },
+            ]}
+          />
         </div>
       </div>
       {isRenameTarget && (

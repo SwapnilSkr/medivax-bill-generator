@@ -1,5 +1,5 @@
 import type { BillDocument } from "@/types/bill";
-import { calculateTotal } from "@/utils/bill";
+import { getBillChargeAmount } from "@/utils/bill";
 
 export type MonthlyPoint = {
   monthKey: string;
@@ -38,7 +38,7 @@ export function buildMonthlySeries(bills: BillDocument[], monthsBack = 6): Month
     const mk = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     const p = points.find((x) => x.monthKey === mk);
     if (p) {
-      p.revenue += calculateTotal(bill.items);
+      p.revenue += getBillChargeAmount(bill.items, bill.includeGst);
       p.billCount += 1;
     }
   }

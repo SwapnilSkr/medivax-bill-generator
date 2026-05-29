@@ -1,17 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, FileText } from "lucide-react";
+import { ArrowRight, Eye, FileText, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DashboardRowActionsMenu } from "./DashboardRowActionsMenu";
 import type { BillDocument } from "@/types/bill";
-import { calculateTotal } from "@/utils/bill";
+import { getBillChargeAmount } from "@/utils/bill";
 
 interface DashboardRecentInvoicesProps {
   bills: BillDocument[];
   onViewAll: () => void;
+  onViewBill: (id: string) => void;
 }
 
-export default function DashboardRecentInvoices({ bills, onViewAll }: DashboardRecentInvoicesProps) {
+export default function DashboardRecentInvoices({
+  bills,
+  onViewAll,
+  onViewBill,
+}: DashboardRecentInvoicesProps) {
   const recent = [...bills]
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     .slice(0, 6);
@@ -52,7 +58,7 @@ export default function DashboardRecentInvoices({ bills, onViewAll }: DashboardR
             </thead>
             <tbody>
               {recent.map((bill) => {
-                const total = calculateTotal(bill.items);
+                const total = getBillChargeAmount(bill.items, bill.includeGst);
                 return (
                   <tr
                     key={bill.id}
@@ -72,9 +78,20 @@ export default function DashboardRecentInvoices({ bills, onViewAll }: DashboardR
                       ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button variant="ghost" size="sm" className="h-8 rounded-lg text-xs" asChild>
-                        <Link href={`/dashboard?viewBill=${bill.id}`}>Open</Link>
-                      </Button>
+                      <DashboardRowActionsMenu
+                        items={[
+                          {
+                            label: "View bill",
+                            icon: Eye,
+                            onSelect: () => onViewBill(bill.id),
+                          },
+                          {
+                            label: "Edit bill",
+                            icon: Pencil,
+                            href: `/generate?billId=${bill.id}`,
+                          },
+                        ]}
+                      />
                     </td>
                   </tr>
                 );

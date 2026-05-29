@@ -2,7 +2,7 @@
 
 import { FileText, FileEdit, IndianRupee, TrendingUp } from "lucide-react";
 import type { BillDocument, DraftDocument } from "@/types/bill";
-import { calculateTotal } from "@/utils/bill";
+import { getBillChargeAmount } from "@/utils/bill";
 
 interface DashboardStatsProps {
   bills: BillDocument[];
@@ -10,7 +10,10 @@ interface DashboardStatsProps {
 }
 
 export default function DashboardStats({ bills, drafts }: DashboardStatsProps) {
-  const totalRevenue = bills.reduce((sum, bill) => sum + calculateTotal(bill.items), 0);
+  const totalRevenue = bills.reduce(
+    (sum, bill) => sum + getBillChargeAmount(bill.items, bill.includeGst),
+    0,
+  );
   const totalBills = bills.length;
   const totalDrafts = drafts.length;
   const aov = totalBills > 0 ? totalRevenue / totalBills : 0;
@@ -24,7 +27,7 @@ export default function DashboardStats({ bills, drafts }: DashboardStatsProps) {
     },
     {
       label: "Booked value",
-      sub: "Sum of line totals",
+      sub: "Sum of invoice totals",
       value: `₹${totalRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: IndianRupee,
     },
