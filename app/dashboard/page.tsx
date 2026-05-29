@@ -12,11 +12,13 @@ import DashboardStats from "@/components/dashboard/DashboardStats";
 import DashboardAnalytics from "@/components/dashboard/DashboardAnalytics";
 import DashboardRecentInvoices from "@/components/dashboard/DashboardRecentInvoices";
 import { BillsTable, DraftsTable } from "@/components/dashboard/DashboardTable";
-import BillListView from "@/components/dashboard/BillListView";
+import { ViewBillDialog } from "@/components/dashboard/ViewBillDialog";
 import type { BillDocument } from "@/types/bill";
 import { cn } from "@/lib/utils";
 import { defaultDashboardDateFilter } from "@/lib/dashboardMonthFilter";
 import { filterBillsForToolbar, filterDraftsForToolbar } from "@/lib/dashboardTableFilters";
+import { appToastError } from "@/lib/app-toast";
+import { buildDashboardUrl } from "@/lib/dashboardUrl";
 
 type DashboardSection = "overview" | "bills" | "drafts";
 
@@ -51,6 +53,7 @@ function DashboardContent() {
 
   const [viewingBill, setViewingBill] = useState<BillDocument | null>(null);
   const wasBillInLiveListRef = useRef(false);
+  const lastListErrorToastRef = useRef<string | null>(null);
 
   const [invoiceSearch, setInvoiceSearch] = useState("");
   const [invoiceDateFilter, setInvoiceDateFilter] = useState(defaultDashboardDateFilter);
@@ -67,12 +70,18 @@ function DashboardContent() {
   );
 
   const dashboardPath = useCallback(() => {
-    const p = new URLSearchParams();
-    if (tabParam === "bills") p.set("tab", "bills");
-    if (tabParam === "drafts") p.set("tab", "drafts");
-    const qs = p.toString();
-    return qs ? `/dashboard?${qs}` : "/dashboard";
-  }, [tabParam]);
+    return buildDashboardUrl(searchParams, { viewBill: null });
+  }, [searchParams]);
+
+  const openViewBill = useCallback(
+    (id: string) => {
+      /* Defer navigation until after the actions menu closes (avoids dismiss-on-open). */
+      queueMicrotask(() => {
+        router.push(buildDashboardUrl(searchParams, { viewBill: id }));
+      });
+    },
+    [router, searchParams],
+  );
 
   useEffect(() => {
     wasBillInLiveListRef.current = false;
@@ -116,9 +125,27 @@ function DashboardContent() {
   const listError =
     [billsError, draftsError].filter(Boolean).join(" · ") || null;
 
-  const closeModal = () => {
+  useEffect(() => {
+    if (!listError) {
+      lastListErrorToastRef.current = null;
+      return;
+    }
+    if (listError === lastListErrorToastRef.current) return;
+    lastListErrorToastRef.current = listError;
+    appToastError("Could not load live data", listError);
+  }, [listError]);
+
+  const closeViewBill = useCallback(() => {
+    setViewingBill(null);
     router.replace(dashboardPath());
-  };
+  }, [router, dashboardPath]);
+
+  const handleViewBillOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) closeViewBill();
+    },
+    [closeViewBill],
+  );
 
   const goToSection = (next: DashboardSection) => {
     if (next === "overview") router.replace("/dashboard");
@@ -165,7 +192,7 @@ function DashboardContent() {
                     type="button"
                     onClick={() => goToSection(key)}
                     className={cn(
-                      "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                      "cursor-pointer rounded-lg px-4 py-2 text-sm font-medium transition-colors",
                       section === key ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -190,20 +217,14 @@ function DashboardContent() {
 
           <DashboardStats bills={scopedBills} drafts={scopedDrafts} />
 
-          {listError && (
-            <div
-              className="mb-6 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-              role="alert"
-            >
-              <p className="font-medium">Could not load live data</p>
-              <p className="mt-1 text-destructive/90">{listError}</p>
-            </div>
-          )}
-
           {section === "overview" && (
             <>
               <DashboardAnalytics bills={scopedBills} />
-              <DashboardRecentInvoices bills={scopedBills} onViewAll={() => goToSection("bills")} />
+              <DashboardRecentInvoices
+                bills={scopedBills}
+                onViewAll={() => goToSection("bills")}
+                onViewBill={openViewBill}
+              />
             </>
           )}
 
@@ -222,6 +243,7 @@ function DashboardContent() {
                   onDateFilterChange={setInvoiceDateFilter}
                   onRename={renameBill}
                   onDelete={deleteBill}
+                  onViewBill={openViewBill}
                 />
               ) : (
                 <DraftsTable
@@ -239,37 +261,12 @@ function DashboardContent() {
         </div>
       </main>
 
-      {viewingBill && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-[2px]"
-          onClick={closeModal}
-          role="presentation"
-        >
-          <div
-            className="max-h-[90vh] w-full max-w-4xl overflow-auto rounded-2xl border border-border/60 bg-card shadow-[0_24px_80px_-20px_rgba(15,23,42,0.45)]"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal
-            aria-labelledby="view-bill-title"
-          >
-            <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-border/60 bg-card/95 px-5 py-4 backdrop-blur-md">
-              <h2 id="view-bill-title" className="text-base font-semibold tracking-tight text-foreground">
-                {viewingBill.displayName}
-              </h2>
-              <Button variant="outline" size="sm" className="h-9 rounded-lg" onClick={closeModal}>
-                Close
-              </Button>
-            </div>
-            <div className="p-6 md:p-8">
-              <BillListView
-                billInfo={viewingBill.billInfo}
-                items={viewingBill.items}
-                showGst={viewingBill.includeGst}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <ViewBillDialog
+        open={Boolean(viewBillId)}
+        bill={viewingBill}
+        loading={Boolean(viewBillId) && !viewingBill}
+        onOpenChange={handleViewBillOpenChange}
+      />
     </div>
   );
 }
