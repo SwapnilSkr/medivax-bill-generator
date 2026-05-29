@@ -13,6 +13,8 @@ import {
   saveDraft,
 } from "@/lib/firebase";
 import { exportToPDF } from "@/utils/pdf";
+import { celebrateBillSaved } from "@/utils/confetti";
+import { appToast } from "@/lib/app-toast";
 import BillForm from "@/components/bill/BillForm";
 import ItemsTable from "@/components/bill/ItemsTable";
 import BillPreview from "@/components/bill/BillPreview";
@@ -48,7 +50,6 @@ function GenerateContent() {
   const [saveDraftModalOpen, setSaveDraftModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [editingDraftDisplayName, setEditingDraftDisplayName] = useState("");
-  const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const componentRef = useRef<HTMLDivElement>(null);
   /* Keep latest Firestore ids in refs so saves after create cannot race React state updates. */
   const billIdRef = useRef<string | null>(null);
@@ -61,11 +62,6 @@ function GenerateContent() {
   useEffect(() => {
     draftIdRef.current = editingDraftId;
   }, [editingDraftId]);
-
-  const showMessage = (type: "success" | "error", text: string) => {
-    setSaveMessage({ type, text });
-    setTimeout(() => setSaveMessage(null), 4000);
-  };
 
   useEffect(() => {
     if (draftId) {
@@ -124,11 +120,11 @@ function GenerateContent() {
         items,
         showGst: includeGst,
       });
-      showMessage("success", "Excel downloaded.");
+      appToast("success", "Excel downloaded.");
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "Failed to export Excel";
-      showMessage("error", msg);
+      appToast("error", msg);
       console.error("Export Excel error:", err);
     }
   };
@@ -141,11 +137,11 @@ function GenerateContent() {
         items,
         showGst: includeGst,
       });
-      showMessage("success", "CSV downloaded.");
+      appToast("success", "CSV downloaded.");
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "Failed to export CSV";
-      showMessage("error", msg);
+      appToast("error", msg);
       console.error("Export CSV error:", err);
     }
   };
@@ -186,17 +182,18 @@ function GenerateContent() {
             draftCleanupFailed = true;
           }
         }
+        void celebrateBillSaved();
         if (draftCleanupFailed) {
-          showMessage(
+          appToast(
             "error",
             "Bill saved, but the draft could not be removed. Try deleting it from the Dashboard.",
           );
         } else {
-          showMessage("success", "Bill saved! View it in the Dashboard.");
+          appToast("success", "Bill saved! View it in the Dashboard.");
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Failed to save bill";
-        showMessage("error", msg);
+        appToast("error", msg);
         console.error("Save bill error:", err);
       } finally {
         saveBillInFlightRef.current = null;
@@ -220,10 +217,10 @@ function GenerateContent() {
       setEditingDraftId(id);
       setEditingDraftDisplayName(displayName);
       setSaveDraftModalOpen(false);
-      showMessage("success", "Draft saved! View it in the Dashboard.");
+      appToast("success", "Draft saved! View it in the Dashboard.");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to save draft";
-      showMessage("error", msg);
+      appToast("error", msg);
       console.error("Save draft error:", err);
     }
   };
@@ -232,28 +229,76 @@ function GenerateContent() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4">
-        <p>Loading...</p>
+      <div className="flex min-h-screen flex-col bg-background">
+        <GeneratePageHeader />
+        <main className="container mx-auto flex-1 p-4">
+          <p>Loading...</p>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      {saveMessage && (
-        <div
-          className={`mb-4 rounded-lg border px-4 py-3 ${
-            saveMessage.type === "success"
-              ? "border-green-200 bg-green-50 text-green-800"
-              : "border-red-200 bg-red-50 text-red-800"
-          }`}
-        >
-          {saveMessage.text}
-        </div>
-      )}
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Medivax Pharma Bill Generator</h1>
-        <div className="flex gap-2">
+    <div className="flex min-h-screen flex-col bg-background">
+      <GeneratePageHeader />
+      <main className="container mx-auto flex-1 p-4">
+        <BillForm
+          billInfo={billInfo}
+          onChange={handleBillInfoChange}
+          includeGst={includeGst}
+          onIncludeGstChange={setIncludeGst}
+        />
+
+        <ItemsTable
+          items={items}
+          includeGst={includeGst}
+          onItemChange={handleItemChange}
+          onAddItem={addItem}
+          onRemoveItem={removeItem}
+        />
+
+        <BillActions
+          items={items}
+          includeGst={includeGst}
+          orientation={orientation}
+          onOrientationChange={setOrientation}
+          onPrint={handlePrintClick}
+          onExportPDF={handleExportPDF}
+          onExportExcel={handleExportExcel}
+          onExportCsv={handleExportCsv}
+          onSaveBill={handleSaveBill}
+          onSaveDraft={() => setSaveDraftModalOpen(true)}
+          onReset={reset}
+          isEditingDraft={!!editingDraftId}
+        />
+
+        <BillPreview
+          billInfo={billInfo}
+          items={items}
+          componentRef={componentRef}
+          showGst={includeGst}
+        />
+
+        <SaveDraftModal
+          open={saveDraftModalOpen}
+          currentName={currentDraftName}
+          isUpdate={!!editingDraftId}
+          onClose={() => setSaveDraftModalOpen(false)}
+          onSave={handleSaveDraft}
+        />
+      </main>
+    </div>
+  );
+}
+
+function GeneratePageHeader() {
+  return (
+    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/75 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
+      <div className="container mx-auto flex h-14 items-center justify-between gap-4 px-4 md:h-16">
+        <h1 className="truncate text-lg font-bold tracking-tight md:text-2xl">
+          Medivax Pharma Bill Generator
+        </h1>
+        <div className="flex shrink-0 gap-2">
           <Link href="/dashboard">
             <Button variant="outline">Dashboard</Button>
           </Link>
@@ -262,58 +307,22 @@ function GenerateContent() {
           </Link>
         </div>
       </div>
-
-      <BillForm
-        billInfo={billInfo}
-        onChange={handleBillInfoChange}
-        includeGst={includeGst}
-        onIncludeGstChange={setIncludeGst}
-      />
-
-      <ItemsTable
-        items={items}
-        includeGst={includeGst}
-        onItemChange={handleItemChange}
-        onAddItem={addItem}
-        onRemoveItem={removeItem}
-      />
-
-      <BillActions
-        items={items}
-        includeGst={includeGst}
-        orientation={orientation}
-        onOrientationChange={setOrientation}
-        onPrint={handlePrintClick}
-        onExportPDF={handleExportPDF}
-        onExportExcel={handleExportExcel}
-        onExportCsv={handleExportCsv}
-        onSaveBill={handleSaveBill}
-        onSaveDraft={() => setSaveDraftModalOpen(true)}
-        onReset={reset}
-        isEditingDraft={!!editingDraftId}
-      />
-
-      <BillPreview
-        billInfo={billInfo}
-        items={items}
-        componentRef={componentRef}
-        showGst={includeGst}
-      />
-
-      <SaveDraftModal
-        open={saveDraftModalOpen}
-        currentName={currentDraftName}
-        isUpdate={!!editingDraftId}
-        onClose={() => setSaveDraftModalOpen(false)}
-        onSave={handleSaveDraft}
-      />
-    </div>
+    </header>
   );
 }
 
 export default function BillGenerator() {
   return (
-    <Suspense fallback={<div className="container p-4">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen flex-col bg-background">
+          <GeneratePageHeader />
+          <main className="container mx-auto flex-1 p-4">
+            <p>Loading...</p>
+          </main>
+        </div>
+      }
+    >
       <GenerateContent />
     </Suspense>
   );
