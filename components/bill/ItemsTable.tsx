@@ -121,41 +121,88 @@ export default function ItemsTable({
     setActiveRow(next);
   };
 
+  const activeItem = items[activeRow];
+  const activeLineLabel = activeItem?.description?.trim() || "Empty line";
+
   return (
     <section className="mb-8">
-      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">Line items</h2>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Select a row, pick a vaccine from inventory, or type manually.
-            Stock updates when you save the bill.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-lg border border-border/70 bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-muted-foreground">
-            Row {activeRow + 1} selected
-          </span>
-          <InventoryPicker
-            variant="toolbar"
-            inventory={inventory}
-            targetRow={activeRow}
-            onSelect={handleInventorySelect}
-          />
-          <Button type="button" variant="outline" size="sm" onClick={onAddItem}>
-            <Plus className="size-4" />
-            Add row
-          </Button>
-          {onAddVaccine ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground"
-              onClick={onAddVaccine}
-            >
-              New vaccine
-            </Button>
-          ) : null}
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold tracking-tight">Line items</h2>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          Add vaccines to the bill below. Stock is deducted only when you save
+          the bill—not when saving drafts.
+        </p>
+      </div>
+
+      <div className="mb-4 rounded-xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 space-y-2">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              You&apos;re editing
+            </p>
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <span className="text-base font-semibold text-foreground">
+                Line {activeRow + 1}
+              </span>
+              <span className="truncate text-sm text-muted-foreground">
+                {activeLineLabel}
+              </span>
+            </div>
+            <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+              Click any row number in the table to switch lines. Use{" "}
+              <strong className="font-medium text-foreground">
+                Pick from inventory
+              </strong>{" "}
+              to auto-fill name, MRP, and your price—or type fields manually.
+            </p>
+          </div>
+
+          <div className="flex w-full shrink-0 flex-col gap-4 lg:w-auto lg:min-w-[280px]">
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-foreground">
+                Fill this line from stock
+              </p>
+              <InventoryPicker
+                variant="toolbar"
+                inventory={inventory}
+                targetRow={activeRow}
+                onSelect={handleInventorySelect}
+              />
+              <p className="text-[11px] leading-snug text-muted-foreground">
+                Opens your vaccine catalog. Out-of-stock items can&apos;t be
+                selected.
+              </p>
+            </div>
+
+            <div className="space-y-2 border-t border-border/60 pt-4">
+              <p className="text-xs font-medium text-muted-foreground">
+                Other actions
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onAddItem}
+                  className="h-9"
+                >
+                  <Plus className="size-4" />
+                  Add blank row
+                </Button>
+                {onAddVaccine ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-9"
+                    onClick={onAddVaccine}
+                  >
+                    New vaccine in catalog
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -192,7 +239,7 @@ export default function ItemsTable({
             {inventory.length} vaccines in catalog
           </span>
           <span className="hidden sm:inline">
-            Click a row number to select it for inventory
+            Tip: click a row number to change which line you&apos;re editing
           </span>
         </div>
 

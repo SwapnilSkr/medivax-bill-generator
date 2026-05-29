@@ -55,6 +55,7 @@ export function InventoryPicker({
           disabled={disabled || inventory.length === 0}
           className={cn(
             "gap-2",
+            isToolbar && "h-10 w-full justify-center sm:w-auto",
             !isToolbar &&
               "h-8 shrink-0 border-dashed px-2.5 text-xs font-medium",
           )}
