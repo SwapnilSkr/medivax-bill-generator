@@ -11,10 +11,14 @@ import {
   getDraft,
   saveBill,
   saveDraft,
+  syncInventoryForBill,
+  InventoryStockError,
 } from "@/lib/firebase";
 import { exportToPDF } from "@/utils/pdf";
 import { celebrateBillSaved } from "@/utils/confetti";
 import { appToast } from "@/lib/app-toast";
+import { useInventory } from "@/hooks/useInventory";
+import { VaccineFormDialog } from "@/components/inventory/VaccineFormDialog";
 import BillForm from "@/components/bill/BillForm";
 import ItemsTable from "@/components/bill/ItemsTable";
 import BillPreview from "@/components/bill/BillPreview";
@@ -42,12 +46,20 @@ function GenerateContent() {
     handleItemChange,
     addItem,
     removeItem,
+    applyInventoryToRow,
     loadFromDraft,
     loadFromBill,
     reset,
+    savedInventoryAdjustments,
   } = useBill();
 
+  const {
+    items: inventoryItems,
+    addItem: addInventoryItem,
+  } = useInventory();
+
   const [saveDraftModalOpen, setSaveDraftModalOpen] = useState(false);
+  const [addVaccineOpen, setAddVaccineOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [editingDraftDisplayName, setEditingDraftDisplayName] = useState("");
   const componentRef = useRef<HTMLDivElement>(null);
@@ -161,12 +173,34 @@ function GenerateContent() {
       try {
         const displayName = getBillDisplayName();
         const draftIdToRemove = draftIdRef.current;
+
+        let inventoryAdjustments = savedInventoryAdjustments;
+        try {
+          inventoryAdjustments = await syncInventoryForBill(
+            items,
+            savedInventoryAdjustments,
+          );
+        } catch (err) {
+          if (err instanceof InventoryStockError) {
+            const detail = err.issues
+              .map(
+                (i) =>
+                  `${i.name}: billing ${i.requested}, only ${i.available} in stock`,
+              )
+              .join(" · ");
+            appToast("error", `Not enough stock. ${detail}`);
+            return;
+          }
+          throw err;
+        }
+
         const id = await saveBill(billIdRef.current, {
           displayName,
           billInfo,
           items,
           orientation,
           includeGst,
+          inventoryAdjustments,
         });
         billIdRef.current = id;
         setEditingBillId(id);
@@ -252,9 +286,13 @@ function GenerateContent() {
         <ItemsTable
           items={items}
           includeGst={includeGst}
+          inventory={inventoryItems}
+          previousInventoryAdjustments={savedInventoryAdjustments}
           onItemChange={handleItemChange}
+          onApplyInventory={applyInventoryToRow}
           onAddItem={addItem}
           onRemoveItem={removeItem}
+          onAddVaccine={() => setAddVaccineOpen(true)}
         />
 
         <BillActions
@@ -285,6 +323,15 @@ function GenerateContent() {
           isUpdate={!!editingDraftId}
           onClose={() => setSaveDraftModalOpen(false)}
           onSave={handleSaveDraft}
+        />
+
+        <VaccineFormDialog
+          open={addVaccineOpen}
+          onOpenChange={setAddVaccineOpen}
+          onSubmit={async (data) => {
+            await addInventoryItem(data);
+            appToast("success", "Vaccine added. Pick it from Inventory on any row.");
+          }}
         />
       </main>
     </div>

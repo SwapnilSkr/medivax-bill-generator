@@ -1,197 +1,426 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { ItemType } from "@/types/bill";
+import type { InventoryAdjustment, InventoryItem } from "@/types/inventory";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { InventoryPicker } from "@/components/inventory/InventoryPicker";
+import {
+  adjustmentsToMap,
+  computeInventoryAdjustments,
+  getStockLevel,
+} from "@/utils/inventory";
+import { cn } from "@/lib/utils";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
 
 interface ItemsTableProps {
   items: ItemType[];
   includeGst?: boolean;
+  inventory?: InventoryItem[];
+  previousInventoryAdjustments?: InventoryAdjustment[];
   onItemChange: (
     index: number,
     field: keyof ItemType,
-    value: string | number
+    value: string | number,
   ) => void;
+  onApplyInventory: (index: number, item: InventoryItem) => void;
   onAddItem: () => void;
   onRemoveItem: (index: number) => void;
+  onAddVaccine?: () => void;
 }
 
-const inputClass =
-  "w-full h-8 rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
+const cellInput =
+  "h-8 w-full min-w-0 border-0 bg-transparent px-2 py-1 text-sm shadow-none focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-0 rounded-md";
+
+function isRowActive(item: ItemType): boolean {
+  return Boolean(item.description?.trim()) || (item.qty ?? 0) > 0;
+}
+
+function isRowEmpty(item: ItemType): boolean {
+  return !isRowActive(item);
+}
+
+function findNextEmptyRow(items: ItemType[], after = -1): number {
+  for (let i = after + 1; i < items.length; i++) {
+    if (isRowEmpty(items[i])) return i;
+  }
+  for (let i = 0; i <= after; i++) {
+    if (isRowEmpty(items[i])) return i;
+  }
+  return 0;
+}
+
+function StockHint({
+  linked,
+  overStock,
+  totalDemand,
+  effectiveAvailable,
+}: {
+  linked: InventoryItem;
+  overStock: boolean;
+  totalDemand: number;
+  effectiveAvailable: number;
+}) {
+  const level = getStockLevel(linked);
+  return (
+    <p
+      className={cn(
+        "mt-0.5 truncate text-[11px] leading-tight",
+        overStock ? "text-red-600 dark:text-red-400" : "text-muted-foreground",
+      )}
+    >
+      <span
+        className={cn(
+          "mr-1 inline-block size-1.5 rounded-full align-middle",
+          level === "ok" && "bg-emerald-500",
+          level === "low" && "bg-amber-500",
+          level === "out" && "bg-red-500",
+        )}
+        aria-hidden
+      />
+      {overStock
+        ? `Need ${totalDemand}, only ${effectiveAvailable} available`
+        : `${effectiveAvailable} available in stock`}
+    </p>
+  );
+}
 
 export default function ItemsTable({
   items,
   includeGst = true,
+  inventory = [],
+  previousInventoryAdjustments = [],
   onItemChange,
+  onApplyInventory,
   onAddItem,
   onRemoveItem,
+  onAddVaccine,
 }: ItemsTableProps) {
+  const [activeRow, setActiveRow] = useState(0);
+  const [showHelp, setShowHelp] = useState(false);
+
+  const inventoryById = useMemo(
+    () => new Map(inventory.map((i) => [i.id, i])),
+    [inventory],
+  );
+  const demandById = adjustmentsToMap(computeInventoryAdjustments(items));
+  const previousById = adjustmentsToMap(previousInventoryAdjustments);
+
+  const filledCount = items.filter(isRowActive).length;
+
+  useEffect(() => {
+    if (activeRow >= items.length) {
+      setActiveRow(Math.max(0, items.length - 1));
+    }
+  }, [items.length, activeRow]);
+
+  const handleInventorySelect = (inv: InventoryItem) => {
+    onApplyInventory(activeRow, inv);
+    const next = findNextEmptyRow(items, activeRow);
+    setActiveRow(next);
+  };
+
   return (
-    <div className="mb-6">
-      <h2 className="text-xl font-bold mb-2">Items</h2>
-      <p className="mb-3 max-w-4xl text-sm leading-relaxed text-muted-foreground">
-        Each line&apos;s <strong className="text-foreground">Amount</strong> is the{" "}
-        <strong className="text-foreground">taxable value</strong> (GST is added later in the
-        bill footer). Price after discount is{" "}
-        <span className="font-mono text-xs">MRP or Rate</span> ×{" "}
-        <span className="font-mono text-xs">(1 − Disc%/100)</span>, then × quantity (and ×{" "}
-        <span className="font-mono text-xs">UNIT</span> when UNIT is a number, e.g. strips per
-        pack). <strong className="text-foreground">Rate</strong> means your agreed{" "}
-        <em>per-unit</em> price before GST;{" "}
-        <strong className="text-foreground">if Rate is filled (any number &gt; 0), it replaces MRP</strong>{" "}
-        for that row—leave Rate empty to bill from MRP + Disc %.
-      </p>
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full table-fixed border-collapse text-sm">
-          <thead className="sticky top-0 bg-muted/80 backdrop-blur-sm">
-            <tr>
-              <th className="border-b p-2 text-left font-semibold">Sr.</th>
-              <th className="border-b p-2 text-left font-semibold">Description</th>
-              <th className="border-b p-2 text-left font-semibold">HSN</th>
-              {includeGst && (
-                <th className="border-b p-2 text-left font-semibold">GST %</th>
-              )}
-              <th className="border-b p-2 text-left font-semibold">MFG</th>
-              <th className="border-b p-2 text-left font-semibold">QTY</th>
-              <th className="border-b p-2 text-left font-semibold">UNIT</th>
-              <th className="border-b p-2 text-left font-semibold">BATCH</th>
-              <th className="border-b p-2 text-left font-semibold">EXP.</th>
-              <th className="border-b p-2 text-left font-semibold">MRP</th>
-              <th className="border-b p-2 text-left font-semibold">Disc %</th>
-              <th
-                className="border-b p-2 text-left font-semibold"
-                title="Per-unit price before GST. If set (&gt; 0), overrides MRP for this row."
-              >
-                Rate / unit
-              </th>
-              <th className="border-b p-2 text-left font-semibold">AMOUNT</th>
-              <th className="border-b p-2 text-left font-semibold">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item, index) => (
-              <tr key={item.id} className="border-b last:border-b-0">
-                <td className="p-2">{index + 1}</td>
-                <td className="p-2">
-                  <Input
-                    type="text"
-                    value={item.description}
-                    onChange={(e) =>
-                      onItemChange(index, "description", e.target.value)
-                    }
-                    className={inputClass}
-                  />
-                </td>
-                <td className="p-2">
-                  <Input
-                    type="text"
-                    value={item.hsn}
-                    onChange={(e) => onItemChange(index, "hsn", e.target.value)}
-                    className={inputClass}
-                  />
-                </td>
-                {includeGst && (
-                  <td className="p-2 text-sm text-muted-foreground tabular-nums">
-                    {(item.amount ?? 0) > 0 ||
-                    (item.description && item.description.trim())
-                      ? "5%"
-                      : "—"}
-                  </td>
-                )}
-                <td className="p-2">
-                  <Input
-                    type="text"
-                    value={item.mfg}
-                    onChange={(e) => onItemChange(index, "mfg", e.target.value)}
-                    className={inputClass}
-                  />
-                </td>
-                <td className="p-2">
-                  <Input
-                    type="number"
-                    value={item.qty ?? ""}
-                    onChange={(e) => onItemChange(index, "qty", e.target.value)}
-                    className={inputClass}
-                  />
-                </td>
-                <td className="p-2">
-                  <Input
-                    type="text"
-                    value={item.unit}
-                    onChange={(e) =>
-                      onItemChange(index, "unit", e.target.value)
-                    }
-                    className={inputClass}
-                  />
-                </td>
-                <td className="p-2">
-                  <Input
-                    type="text"
-                    value={item.batch}
-                    onChange={(e) =>
-                      onItemChange(index, "batch", e.target.value)
-                    }
-                    className={inputClass}
-                  />
-                </td>
-                <td className="p-2">
-                  <Input
-                    type="text"
-                    value={item.exp}
-                    onChange={(e) => onItemChange(index, "exp", e.target.value)}
-                    className={inputClass}
-                  />
-                </td>
-                <td className="p-2">
-                  <Input
-                    type="number"
-                    value={item.mrp ?? ""}
-                    onChange={(e) => onItemChange(index, "mrp", e.target.value)}
-                    className={inputClass}
-                  />
-                </td>
-                <td className="p-2">
-                  <Input
-                    type="number"
-                    value={item.disc ?? ""}
-                    onChange={(e) =>
-                      onItemChange(index, "disc", e.target.value)
-                    }
-                    className={inputClass}
-                  />
-                </td>
-                <td className="p-2">
-                  <Input
-                    type="number"
-                    value={item.rate ?? ""}
-                    onChange={(e) =>
-                      onItemChange(index, "rate", e.target.value)
-                    }
-                    placeholder="Blank → MRP"
-                    className={inputClass}
-                    title="Leave blank to use MRP × (1 − Disc %). Any value &gt; 0 overrides MRP."
-                  />
-                </td>
-                <td className="p-2 py-2.5">
-                  {item.amount?.toFixed(2) || ""}
-                </td>
-                <td className="p-2">
-                  {items.length > 10 && (
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => onRemoveItem(index)}
-                    >
-                      Remove
-                    </Button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <section className="mb-8">
+      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">Line items</h2>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Select a row, pick a vaccine from inventory, or type manually.
+            Stock updates when you save the bill.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-lg border border-border/70 bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-muted-foreground">
+            Row {activeRow + 1} selected
+          </span>
+          <InventoryPicker
+            variant="toolbar"
+            inventory={inventory}
+            targetRow={activeRow}
+            onSelect={handleInventorySelect}
+          />
+          <Button type="button" variant="outline" size="sm" onClick={onAddItem}>
+            <Plus className="size-4" />
+            Add row
+          </Button>
+          {onAddVaccine ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={onAddVaccine}
+            >
+              New vaccine
+            </Button>
+          ) : null}
+        </div>
       </div>
-      <Button onClick={onAddItem} className="mt-4">
-        Add Item
-      </Button>
-    </div>
+
+      <div className="mb-4 overflow-hidden rounded-xl border border-border/60 bg-muted/20">
+        <button
+          type="button"
+          onClick={() => setShowHelp((v) => !v)}
+          className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/40"
+        >
+          <ChevronDown
+            className={cn(
+              "size-4 shrink-0 transition-transform",
+              showHelp && "rotate-180",
+            )}
+          />
+          How amounts are calculated
+        </button>
+        {showHelp ? (
+          <div className="border-t border-border/50 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+            <strong className="text-foreground">Amount</strong> = taxable value
+            before GST. Uses{" "}
+            <span className="font-mono text-xs">Rate</span> if set (&gt; 0), else{" "}
+            <span className="font-mono text-xs">MRP</span>, minus{" "}
+            <span className="font-mono text-xs">Disc%</span>, × qty (× numeric{" "}
+            <span className="font-mono text-xs">UNIT</span> when applicable).
+          </div>
+        ) : null}
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm">
+        <div className="flex items-center justify-between border-b border-border/60 bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
+          <span>
+            {filledCount} active line{filledCount === 1 ? "" : "s"} ·{" "}
+            {inventory.length} vaccines in catalog
+          </span>
+          <span className="hidden sm:inline">
+            Click a row number to select it for inventory
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[960px] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-border/60 bg-muted/40 text-left text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <th className="w-11 px-2 py-2.5">#</th>
+                <th className="min-w-[160px] px-2 py-2.5">Description</th>
+                <th className="w-[72px] px-2 py-2.5">HSN</th>
+                {includeGst && (
+                  <th className="w-14 px-2 py-2.5 text-center">GST</th>
+                )}
+                <th className="w-[72px] px-2 py-2.5">MFG</th>
+                <th className="w-16 px-2 py-2.5">Qty</th>
+                <th className="w-14 px-2 py-2.5">Unit</th>
+                <th className="w-[76px] px-2 py-2.5">Batch</th>
+                <th className="w-[68px] px-2 py-2.5">Exp</th>
+                <th className="w-[76px] px-2 py-2.5">MRP</th>
+                <th className="w-14 px-2 py-2.5">Disc</th>
+                <th className="w-[84px] px-2 py-2.5">Rate</th>
+                <th className="w-[88px] px-2 py-2.5 text-right">Amount</th>
+                <th className="w-10 px-1 py-2.5" />
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item, index) => {
+                const linked = item.inventoryId
+                  ? inventoryById.get(item.inventoryId)
+                  : undefined;
+                const rowQty = item.qty ?? 0;
+                const totalDemandForSku = item.inventoryId
+                  ? (demandById.get(item.inventoryId) ?? 0)
+                  : 0;
+                const restoredForBill = item.inventoryId
+                  ? (previousById.get(item.inventoryId) ?? 0)
+                  : 0;
+                const effectiveAvailable = linked
+                  ? linked.quantity + restoredForBill
+                  : 0;
+                const overStock =
+                  linked &&
+                  rowQty > 0 &&
+                  totalDemandForSku > effectiveAvailable;
+                const active = index === activeRow;
+                const empty = isRowEmpty(item);
+
+                return (
+                  <tr
+                    key={item.id}
+                    className={cn(
+                      "border-b border-border/40 transition-colors last:border-b-0",
+                      active && "bg-primary/4 ring-1 ring-inset ring-primary/20",
+                      overStock && "bg-red-500/4",
+                      empty && !active && "opacity-55 hover:opacity-80",
+                    )}
+                  >
+                    <td className="p-0 text-center">
+                      <button
+                        type="button"
+                        onClick={() => setActiveRow(index)}
+                        className={cn(
+                          "flex size-full min-h-10 w-full cursor-pointer items-center justify-center text-xs font-medium tabular-nums transition-colors",
+                          active
+                            ? "bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                        )}
+                        title={`Select row ${index + 1}`}
+                      >
+                        {index + 1}
+                      </button>
+                    </td>
+                    <td className="px-1 py-1 align-top">
+                      <Input
+                        type="text"
+                        value={item.description}
+                        onFocus={() => setActiveRow(index)}
+                        onChange={(e) =>
+                          onItemChange(index, "description", e.target.value)
+                        }
+                        placeholder="Vaccine or product name"
+                        className={cellInput}
+                      />
+                      {linked ? (
+                        <StockHint
+                          linked={linked}
+                          overStock={Boolean(overStock)}
+                          totalDemand={totalDemandForSku}
+                          effectiveAvailable={effectiveAvailable}
+                        />
+                      ) : null}
+                    </td>
+                    <td className="px-1 py-1">
+                      <Input
+                        type="text"
+                        value={item.hsn}
+                        onFocus={() => setActiveRow(index)}
+                        onChange={(e) =>
+                          onItemChange(index, "hsn", e.target.value)
+                        }
+                        className={cellInput}
+                      />
+                    </td>
+                    {includeGst && (
+                      <td className="px-2 py-2 text-center text-xs tabular-nums text-muted-foreground">
+                        {isRowActive(item) ? "5%" : "—"}
+                      </td>
+                    )}
+                    <td className="px-1 py-1">
+                      <Input
+                        type="text"
+                        value={item.mfg}
+                        onFocus={() => setActiveRow(index)}
+                        onChange={(e) =>
+                          onItemChange(index, "mfg", e.target.value)
+                        }
+                        className={cellInput}
+                      />
+                    </td>
+                    <td className="px-1 py-1">
+                      <Input
+                        type="number"
+                        value={item.qty ?? ""}
+                        onFocus={() => setActiveRow(index)}
+                        onChange={(e) =>
+                          onItemChange(index, "qty", e.target.value)
+                        }
+                        className={cn(
+                          cellInput,
+                          "tabular-nums",
+                          overStock && "text-red-600",
+                        )}
+                      />
+                    </td>
+                    <td className="px-1 py-1">
+                      <Input
+                        type="text"
+                        value={item.unit}
+                        onFocus={() => setActiveRow(index)}
+                        onChange={(e) =>
+                          onItemChange(index, "unit", e.target.value)
+                        }
+                        className={cellInput}
+                      />
+                    </td>
+                    <td className="px-1 py-1">
+                      <Input
+                        type="text"
+                        value={item.batch}
+                        onFocus={() => setActiveRow(index)}
+                        onChange={(e) =>
+                          onItemChange(index, "batch", e.target.value)
+                        }
+                        className={cellInput}
+                      />
+                    </td>
+                    <td className="px-1 py-1">
+                      <Input
+                        type="text"
+                        value={item.exp}
+                        onFocus={() => setActiveRow(index)}
+                        onChange={(e) =>
+                          onItemChange(index, "exp", e.target.value)
+                        }
+                        className={cellInput}
+                      />
+                    </td>
+                    <td className="px-1 py-1">
+                      <Input
+                        type="number"
+                        value={item.mrp ?? ""}
+                        onFocus={() => setActiveRow(index)}
+                        onChange={(e) =>
+                          onItemChange(index, "mrp", e.target.value)
+                        }
+                        className={cn(cellInput, "tabular-nums")}
+                      />
+                    </td>
+                    <td className="px-1 py-1">
+                      <Input
+                        type="number"
+                        value={item.disc ?? ""}
+                        onFocus={() => setActiveRow(index)}
+                        onChange={(e) =>
+                          onItemChange(index, "disc", e.target.value)
+                        }
+                        className={cn(cellInput, "tabular-nums")}
+                      />
+                    </td>
+                    <td className="px-1 py-1">
+                      <Input
+                        type="number"
+                        value={item.rate ?? ""}
+                        onFocus={() => setActiveRow(index)}
+                        onChange={(e) =>
+                          onItemChange(index, "rate", e.target.value)
+                        }
+                        placeholder="—"
+                        title="Leave blank to use MRP × (1 − Disc %). Any value > 0 overrides MRP."
+                        className={cn(cellInput, "tabular-nums")}
+                      />
+                    </td>
+                    <td className="px-2 py-2 text-right font-medium tabular-nums text-foreground">
+                      {item.amount != null && item.amount > 0
+                        ? item.amount.toFixed(2)
+                        : "—"}
+                    </td>
+                    <td className="px-1 py-1 text-center">
+                      {items.length > 10 ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => onRemoveItem(index)}
+                          title="Remove row"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      ) : null}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
   );
 }

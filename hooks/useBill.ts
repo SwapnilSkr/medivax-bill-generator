@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, ChangeEvent } from "react";
 import { BillInfoType, ItemType } from "@/types/bill";
 import { computeLineAmount, createInitialItems } from "@/utils/bill";
 import type { BillDocument, DraftDocument } from "@/types/bill";
+import type { InventoryItem } from "@/types/inventory";
+import { inventoryToLineItem } from "@/utils/inventory";
 
 const defaultBillInfo: BillInfoType = {
   billNo: "",
@@ -28,6 +30,9 @@ export const useBill = () => {
   const [includeGst, setIncludeGst] = useState(true);
   const [editingBillId, setEditingBillId] = useState<string | null>(null);
   const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
+  const [savedInventoryAdjustments, setSavedInventoryAdjustments] = useState<
+    BillDocument["inventoryAdjustments"]
+  >(undefined);
 
   useEffect(() => {
     setBillInfo((prev) => ({
@@ -64,6 +69,9 @@ export const useBill = () => {
         typeof value === "string" ? parseFloat(value) || null : value;
     } else {
       newItems[index][field as keyof ItemType] = value as never;
+      if (field === "description") {
+        newItems[index].inventoryId = null;
+      }
     }
     if (
       field === "qty" ||
@@ -93,8 +101,23 @@ export const useBill = () => {
         disc: 0,
         rate: 0,
         amount: 0,
+        inventoryId: null,
       },
     ]);
+  };
+
+  const applyInventoryToRow = (index: number, inventoryItem: InventoryItem) => {
+    setItems((prev) => {
+      const next = [...prev];
+      const existingQty =
+        next[index].qty && next[index].qty! > 0 ? next[index].qty! : 1;
+      next[index] = inventoryToLineItem(
+        inventoryItem,
+        next[index].id,
+        existingQty,
+      );
+      return next;
+    });
   };
 
   const removeItem = (index: number) => {
@@ -112,6 +135,7 @@ export const useBill = () => {
     setIncludeGst(draft.includeGst);
     setEditingDraftId(draft.id);
     setEditingBillId(null);
+    setSavedInventoryAdjustments(undefined);
   }, []);
 
   const loadFromBill = useCallback((bill: BillDocument) => {
@@ -121,6 +145,7 @@ export const useBill = () => {
     setIncludeGst(bill.includeGst);
     setEditingBillId(bill.id);
     setEditingDraftId(null);
+    setSavedInventoryAdjustments(bill.inventoryAdjustments);
   }, []);
 
   const reset = useCallback(() => {
@@ -138,6 +163,7 @@ export const useBill = () => {
     setIncludeGst(true);
     setEditingBillId(null);
     setEditingDraftId(null);
+    setSavedInventoryAdjustments(undefined);
   }, []);
 
   return {
@@ -149,12 +175,14 @@ export const useBill = () => {
     setIncludeGst,
     editingBillId,
     editingDraftId,
+    savedInventoryAdjustments,
     setEditingBillId,
     setEditingDraftId,
     handleBillInfoChange,
     handleItemChange,
     addItem,
     removeItem,
+    applyInventoryToRow,
     loadFromDraft,
     loadFromBill,
     reset,
