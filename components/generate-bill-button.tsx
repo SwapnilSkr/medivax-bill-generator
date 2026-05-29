@@ -20,7 +20,7 @@ export default function GenerateBillButton() {
     <div className="my-2 flex justify-center">
       <motion.button
         type="button"
-        className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-linear-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-4 text-[0.9375rem] font-semibold tracking-tight text-white shadow-[0_20px_50px_-15px_rgba(15,23,42,0.65)] ring-1 ring-white/10 dark:from-primary dark:via-primary dark:to-primary dark:shadow-[0_16px_40px_-12px_oklch(0.2_0.04_265/0.45)] dark:ring-white/5"
+        className="relative w-full max-w-sm cursor-pointer overflow-hidden rounded-2xl bg-linear-to-r from-slate-800 via-slate-700 to-slate-800 px-8 py-4 text-[0.9375rem] font-semibold tracking-tight text-white shadow-[0_20px_50px_-15px_rgba(15,23,42,0.65)] ring-1 ring-white/10 dark:from-primary dark:via-primary dark:to-primary dark:shadow-[0_16px_40px_-12px_oklch(0.2_0.04_265/0.45)] dark:ring-white/5"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleClick}

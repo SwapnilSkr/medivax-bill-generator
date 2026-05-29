@@ -28,7 +28,7 @@ export default function DashboardSidebar() {
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r border-border/60 bg-slate-950 text-slate-100">
       <div className="shrink-0 border-b border-white/10 px-4 py-5">
-        <Link href="/" className="flex items-center gap-3 transition-opacity hover:opacity-90">
+        <Link href="/" className="flex cursor-pointer items-center gap-3 transition-opacity hover:opacity-90">
           <Image
             src="/assets/MedivaxLogo.jpeg"
             alt="Medivax Pharma"
@@ -55,7 +55,7 @@ export default function DashboardSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                 active
                   ? "bg-white/10 text-white shadow-sm ring-1 ring-white/10"
                   : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
@@ -73,14 +73,14 @@ export default function DashboardSidebar() {
       <div className="shrink-0 space-y-1 border-t border-white/10 bg-slate-950 p-3">
         <Link
           href="/generate"
-          className="flex items-center gap-3 rounded-xl bg-white px-3 py-2.5 text-sm font-semibold text-slate-950 shadow-sm transition-colors hover:bg-slate-100"
+          className="flex cursor-pointer items-center gap-3 rounded-xl bg-white px-3 py-2.5 text-sm font-semibold text-slate-950 shadow-sm transition-colors hover:bg-slate-100"
         >
           <Plus className="size-4 shrink-0" />
           New invoice
         </Link>
         <Link
           href="/"
-          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-100"
+          className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-100"
         >
           <Home className="size-4 shrink-0" />
           Marketing site

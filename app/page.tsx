@@ -9,7 +9,7 @@ export default function LandingPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/75 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:h-17 md:px-6">
-          <Link href="/" className="group flex items-center gap-2.5 transition-opacity hover:opacity-90">
+          <Link href="/" className="group flex cursor-pointer items-center gap-2.5 transition-opacity hover:opacity-90">
             <Image
               src="/assets/MedivaxLogo.jpeg"
               alt="Medivax Pharma logo"
@@ -34,14 +34,14 @@ export default function LandingPage() {
               <Link
                 key={label}
                 href={href}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                className="cursor-pointer text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 {label}
               </Link>
             ))}
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="cursor-pointer text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Dashboard
             </Link>
@@ -240,7 +240,7 @@ export default function LandingPage() {
                     <li key={item}>
                       <Link
                         href="#"
-                        className="text-foreground/80 transition-colors hover:text-foreground"
+                        className="cursor-pointer text-foreground/80 transition-colors hover:text-foreground"
                       >
                         {item}
                       </Link>
@@ -259,7 +259,7 @@ export default function LandingPage() {
                 <Link
                   key={label}
                   href="#"
-                  className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  className="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {label}
                 </Link>

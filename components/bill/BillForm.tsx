@@ -57,9 +57,9 @@ export default function BillForm({
             id="includeGst"
             checked={includeGst}
             onChange={(e) => onIncludeGstChange?.(e.target.checked)}
-            className="h-4 w-4 rounded border-input"
+            className="h-4 w-4 cursor-pointer rounded border-input"
           />
-          <label htmlFor="includeGst" className={labelClass + " mb-0"}>
+          <label htmlFor="includeGst" className={labelClass + " mb-0 cursor-pointer"}>
             Include GST on bill
           </label>
         </div>

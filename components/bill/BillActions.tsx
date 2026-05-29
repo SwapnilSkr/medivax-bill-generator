@@ -77,7 +77,7 @@ export default function BillActions({
   const totalQuantity = calculateTotalItems(items);
 
   const selectClass =
-    "h-8 min-w-[8.5rem] rounded-md border border-input bg-background px-2.5 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
+    "h-8 min-w-[8.5rem] cursor-pointer rounded-md border border-input bg-background px-2.5 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
   return (
     <div
