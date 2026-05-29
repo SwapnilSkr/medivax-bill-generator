@@ -265,6 +265,17 @@ export const calculateTotal = (items: ItemType[]): number => {
   }, 0);
 };
 
+/** Chargeable total for lists/KPIs: grand total when GST applies, else sum of line amounts. */
+export function getBillChargeAmount(
+  items: ItemType[],
+  includeGst: boolean,
+): number {
+  if (includeGst) {
+    return calculateGstBreakdown(items).grandTotal;
+  }
+  return calculateTotal(items);
+}
+
 export const calculateTotalItems = (items: ItemType[]): number => {
   return items.reduce((total, item) => {
     return total + (item.qty !== null ? item.qty : 0);
