@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
+import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import BillListView from "@/components/dashboard/BillListView";
 import type { BillDocument } from "@/types/bill";
+import { generateDuplicateBillUrl } from "@/lib/generateUrl";
 
 interface ViewBillDialogProps {
   open: boolean;
@@ -50,16 +53,32 @@ export function ViewBillDialog({
             <DialogTitle className="min-w-0 truncate text-base">
               {bill?.displayName ?? "Invoice"}
             </DialogTitle>
-            <Button
-              ref={closeButtonRef}
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-9 shrink-0 rounded-lg"
-              onClick={() => onOpenChange(false)}
-            >
-              Close
-            </Button>
+            <div className="flex shrink-0 items-center gap-2">
+              {bill ? (
+                <Button
+                  asChild
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  className="h-9 gap-1.5 rounded-lg"
+                >
+                  <Link href={generateDuplicateBillUrl(bill.id)}>
+                    <Copy className="size-3.5" />
+                    Duplicate
+                  </Link>
+                </Button>
+              ) : null}
+              <Button
+                ref={closeButtonRef}
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 shrink-0 rounded-lg"
+                onClick={() => onOpenChange(false)}
+              >
+                Close
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 

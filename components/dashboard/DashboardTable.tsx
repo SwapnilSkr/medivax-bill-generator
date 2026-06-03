@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Eye, Pencil, Trash2, Tag, Search, ArrowUpDown } from "lucide-react";
+import { Eye, Pencil, Trash2, Tag, Search, ArrowUpDown, Copy } from "lucide-react";
 import { DashboardRowActionsMenu } from "./DashboardRowActionsMenu";
 import type { BillDocument, DraftDocument } from "@/types/bill";
 import { getBillChargeAmount } from "@/utils/bill";
@@ -10,6 +10,7 @@ import {
   type DashboardDateFilter,
 } from "@/lib/dashboardMonthFilter";
 import { filterBillsForToolbar, filterDraftsForToolbar } from "@/lib/dashboardTableFilters";
+import { generateDuplicateBillUrl, generateEditBillUrl, generateEditDraftUrl } from "@/lib/generateUrl";
 import { DashboardDateFilterBar } from "./DashboardMonthPicker";
 import RenameModal from "./RenameModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
@@ -196,7 +197,12 @@ export function BillsTable({
                         {
                           label: "Edit bill",
                           icon: Pencil,
-                          href: `/generate?billId=${bill.id}`,
+                          href: generateEditBillUrl(bill.id),
+                        },
+                        {
+                          label: "Duplicate as new bill",
+                          icon: Copy,
+                          href: generateDuplicateBillUrl(bill.id),
                         },
                         {
                           label: "Rename",
@@ -406,7 +412,7 @@ export function DraftsTable({
                         {
                           label: "Continue editing",
                           icon: Pencil,
-                          href: `/generate?draftId=${draft.id}`,
+                          href: generateEditDraftUrl(draft.id),
                         },
                         {
                           label: "Rename",

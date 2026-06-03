@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Eye, FileText, Pencil } from "lucide-react";
+import { ArrowRight, Eye, FileText, Pencil, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardRowActionsMenu } from "./DashboardRowActionsMenu";
 import type { BillDocument } from "@/types/bill";
 import { getBillChargeAmount } from "@/utils/bill";
+import { generateDuplicateBillUrl, generateEditBillUrl } from "@/lib/generateUrl";
 
 interface DashboardRecentInvoicesProps {
   bills: BillDocument[];
@@ -88,7 +89,12 @@ export default function DashboardRecentInvoices({
                           {
                             label: "Edit bill",
                             icon: Pencil,
-                            href: `/generate?billId=${bill.id}`,
+                            href: generateEditBillUrl(bill.id),
+                          },
+                          {
+                            label: "Duplicate as new bill",
+                            icon: Copy,
+                            href: generateDuplicateBillUrl(bill.id),
                           },
                         ]}
                       />

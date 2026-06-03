@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, ChangeEvent } from "react";
 import { BillInfoType, ItemType } from "@/types/bill";
-import { computeLineAmount, createInitialItems } from "@/utils/bill";
+import { computeLineAmount, createInitialItems, cloneBillInfoForDuplicate, cloneItemsForDuplicate } from "@/utils/bill";
 import type { BillDocument, DraftDocument } from "@/types/bill";
 import type { InventoryItem } from "@/types/inventory";
 import { inventoryToLineItem } from "@/utils/inventory";
@@ -148,6 +148,17 @@ export const useBill = () => {
     setSavedInventoryAdjustments(bill.inventoryAdjustments);
   }, []);
 
+  /** Copy a saved bill into the editor as a new invoice (does not link to the original). */
+  const duplicateFromBill = useCallback((bill: BillDocument) => {
+    setBillInfo(cloneBillInfoForDuplicate(bill.billInfo));
+    setItems(cloneItemsForDuplicate(bill.items));
+    setOrientation(bill.orientation);
+    setIncludeGst(bill.includeGst);
+    setEditingBillId(null);
+    setEditingDraftId(null);
+    setSavedInventoryAdjustments(undefined);
+  }, []);
+
   const reset = useCallback(() => {
     setBillInfo({
       ...defaultBillInfo,
@@ -176,6 +187,7 @@ export const useBill = () => {
     editingBillId,
     editingDraftId,
     savedInventoryAdjustments,
+    setSavedInventoryAdjustments,
     setEditingBillId,
     setEditingDraftId,
     handleBillInfoChange,
@@ -185,6 +197,7 @@ export const useBill = () => {
     applyInventoryToRow,
     loadFromDraft,
     loadFromBill,
+    duplicateFromBill,
     reset,
   };
 };

@@ -1,4 +1,4 @@
-import { ItemType } from "@/types/bill";
+import { ItemType, BillInfoType } from "@/types/bill";
 
 /** Round to 2 decimal places (currency). */
 export const round2 = (n: number): number =>
@@ -307,3 +307,37 @@ export const createEmptyItem = (id: number): ItemType => {
 export const createInitialItems = (count: number = 10): ItemType[] => {
   return Array.from({ length: count }, (_, i) => createEmptyItem(i + 1));
 };
+
+/** Deep-copy line items for a new bill (preserves inventory links for fresh deduction). */
+export function cloneItemsForDuplicate(items: ItemType[]): ItemType[] {
+  return items.map((item, index) => {
+    const cloned: ItemType = {
+      ...item,
+      id: index + 1,
+    };
+    cloned.amount = computeLineAmount(cloned);
+    return cloned;
+  });
+}
+
+function freshBillDateTime(): Pick<BillInfoType, "billDate" | "billTime"> {
+  return {
+    billDate: new Date().toISOString().split("T")[0],
+    billTime: new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }),
+  };
+}
+
+/** Customer, lines, and settings copied; bill number cleared for a new invoice. */
+export function cloneBillInfoForDuplicate(
+  billInfo: BillInfoType,
+): BillInfoType {
+  return {
+    ...billInfo,
+    ...freshBillDateTime(),
+    billNo: "",
+  };
+}

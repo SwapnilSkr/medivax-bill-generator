@@ -30,6 +30,7 @@ function GenerateContent() {
   const searchParams = useSearchParams();
   const draftId = searchParams.get("draftId");
   const billId = searchParams.get("billId");
+  const duplicateFromId = searchParams.get("duplicateFrom");
 
   const {
     billInfo,
@@ -49,8 +50,10 @@ function GenerateContent() {
     applyInventoryToRow,
     loadFromDraft,
     loadFromBill,
+    duplicateFromBill,
     reset,
     savedInventoryAdjustments,
+    setSavedInventoryAdjustments,
   } = useBill();
 
   const {
@@ -61,11 +64,17 @@ function GenerateContent() {
   const [saveDraftModalOpen, setSaveDraftModalOpen] = useState(false);
   const [addVaccineOpen, setAddVaccineOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [duplicateSourceLabel, setDuplicateSourceLabel] = useState<string | null>(
+    null,
+  );
   const [editingDraftDisplayName, setEditingDraftDisplayName] = useState("");
   const componentRef = useRef<HTMLDivElement>(null);
   /* Keep latest Firestore ids in refs so saves after create cannot race React state updates. */
   const billIdRef = useRef<string | null>(null);
   const draftIdRef = useRef<string | null>(null);
+  const savedInventoryAdjustmentsRef = useRef<
+    typeof savedInventoryAdjustments
+  >(undefined);
   const saveBillInFlightRef = useRef<Promise<void> | null>(null);
 
   useEffect(() => {
@@ -74,25 +83,91 @@ function GenerateContent() {
   useEffect(() => {
     draftIdRef.current = editingDraftId;
   }, [editingDraftId]);
+  useEffect(() => {
+    savedInventoryAdjustmentsRef.current = savedInventoryAdjustments;
+  }, [savedInventoryAdjustments]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    const finish = () => {
+      if (!cancelled) setLoading(false);
+    };
+
     if (draftId) {
       getDraft(draftId).then((draft) => {
+        if (cancelled) return;
         if (draft) {
           loadFromDraft(draft);
           setEditingDraftDisplayName(draft.displayName);
+          setDuplicateSourceLabel(null);
         }
-        setLoading(false);
+        finish();
       });
-    } else if (billId) {
-      getBill(billId).then((bill) => {
-        if (bill) loadFromBill(bill);
-        setLoading(false);
-      });
-    } else {
-      setLoading(false);
+      return () => {
+        cancelled = true;
+      };
     }
-  }, [draftId, billId, loadFromDraft, loadFromBill]);
+
+    if (billId) {
+      getBill(billId).then((bill) => {
+        if (cancelled) return;
+        if (bill) {
+          loadFromBill(bill);
+          setDuplicateSourceLabel(null);
+        }
+        finish();
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (duplicateFromId) {
+      getBill(duplicateFromId).then((bill) => {
+        if (cancelled) return;
+        if (bill) {
+          duplicateFromBill(bill);
+          billIdRef.current = null;
+          draftIdRef.current = null;
+          savedInventoryAdjustmentsRef.current = undefined;
+          setDuplicateSourceLabel(bill.displayName);
+          appToast(
+            "success",
+            "Copied into a new bill — set a bill number, then save.",
+          );
+        } else {
+          appToast("error", "Could not find that invoice to duplicate.");
+        }
+        finish();
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setDuplicateSourceLabel(null);
+    finish();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    draftId,
+    billId,
+    duplicateFromId,
+    loadFromDraft,
+    loadFromBill,
+    duplicateFromBill,
+  ]);
+
+  const handleReset = () => {
+    reset();
+    setDuplicateSourceLabel(null);
+    billIdRef.current = null;
+    draftIdRef.current = null;
+    savedInventoryAdjustmentsRef.current = undefined;
+  };
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
@@ -174,11 +249,11 @@ function GenerateContent() {
         const displayName = getBillDisplayName();
         const draftIdToRemove = draftIdRef.current;
 
-        let inventoryAdjustments = savedInventoryAdjustments;
+        let inventoryAdjustments = savedInventoryAdjustmentsRef.current;
         try {
           inventoryAdjustments = await syncInventoryForBill(
             items,
-            savedInventoryAdjustments,
+            savedInventoryAdjustmentsRef.current,
           );
         } catch (err) {
           if (err instanceof InventoryStockError) {
@@ -204,6 +279,9 @@ function GenerateContent() {
         });
         billIdRef.current = id;
         setEditingBillId(id);
+        savedInventoryAdjustmentsRef.current = inventoryAdjustments;
+        setSavedInventoryAdjustments(inventoryAdjustments);
+        setDuplicateSourceLabel(null);
         let draftCleanupFailed = false;
         if (draftIdToRemove) {
           try {
@@ -276,6 +354,23 @@ function GenerateContent() {
     <div className="flex min-h-screen flex-col bg-background">
       <GeneratePageHeader />
       <main className="container mx-auto flex-1 p-4">
+        {duplicateSourceLabel ? (
+          <div
+            className="mb-6 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-foreground"
+            role="status"
+          >
+            <p className="font-medium">New bill from copy</p>
+            <p className="mt-1 text-muted-foreground">
+              Duplicated from{" "}
+              <span className="font-medium text-foreground">
+                {duplicateSourceLabel}
+              </span>
+              . This is a separate invoice — assign a new bill number before
+              saving. Inventory will be deducted again for stock-linked lines.
+            </p>
+          </div>
+        ) : null}
+
         <BillForm
           billInfo={billInfo}
           onChange={handleBillInfoChange}
@@ -306,7 +401,7 @@ function GenerateContent() {
           onExportCsv={handleExportCsv}
           onSaveBill={handleSaveBill}
           onSaveDraft={() => setSaveDraftModalOpen(true)}
-          onReset={reset}
+          onReset={handleReset}
           isEditingDraft={!!editingDraftId}
         />
 
