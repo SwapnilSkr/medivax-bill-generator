@@ -10,6 +10,7 @@ import {
   Package,
   Minus,
   ArrowUpDown,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,7 @@ export default function DashboardInventory({
   const [editing, setEditing] = useState<InventoryItem | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [adjustingId, setAdjustingId] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const stats = useMemo(() => {
     let totalUnits = 0;
@@ -113,6 +115,28 @@ export default function DashboardInventory({
         "error",
         err instanceof Error ? err.message : "Could not delete vaccine.",
       );
+    }
+  };
+
+  const handleExportExcel = async () => {
+    if (exporting || filtered.length === 0) return;
+    setExporting(true);
+    try {
+      const { exportInventoryToExcel } = await import(
+        "@/utils/exportInventoryExcel"
+      );
+      await exportInventoryToExcel({
+        items: filtered,
+        filtered: Boolean(search.trim()),
+      });
+      appToast("success", "Inventory exported to Excel.");
+    } catch (err) {
+      appToast(
+        "error",
+        err instanceof Error ? err.message : "Failed to export Excel.",
+      );
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -196,6 +220,17 @@ export default function DashboardInventory({
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9 gap-2"
+              disabled={exporting || filtered.length === 0}
+              onClick={() => void handleExportExcel()}
+            >
+              <FileSpreadsheet className="size-4" />
+              {exporting ? "Exporting…" : "Export Excel"}
+            </Button>
             <Button variant="outline" size="sm" asChild className="h-9">
               <Link href="/generate">Use in new invoice</Link>
             </Button>
