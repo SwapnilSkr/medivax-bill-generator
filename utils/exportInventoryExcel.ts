@@ -2,6 +2,8 @@ import ExcelJS from "exceljs";
 import type { InventoryItem } from "@/types/inventory";
 import { getStockLevel } from "@/utils/inventory";
 
+export type InventoryExcelExportMode = "simple" | "advanced";
+
 const HEADER_FILL: ExcelJS.Fill = {
   type: "pattern",
   pattern: "solid",
@@ -32,25 +34,67 @@ function formatSheetDate(d: Date): string {
   });
 }
 
-export interface ExportInventoryExcelOptions {
-  items: InventoryItem[];
-  /** When true, subtitle notes the export reflects the current search filter. */
-  filtered?: boolean;
+function downloadWorkbook(wb: ExcelJS.Workbook, filename: string) {
+  return wb.xlsx.writeBuffer().then((buf) => {
+    const blob = new Blob([buf], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
 }
 
-export async function exportInventoryToExcel({
-  items,
-  filtered = false,
-}: ExportInventoryExcelOptions): Promise<void> {
-  const wb = new ExcelJS.Workbook();
-  wb.creator = "Medivax Pharma";
-  wb.created = new Date();
+function styleHeaderRow(row: ExcelJS.Row, colCount: number) {
+  for (let i = 1; i <= colCount; i++) {
+    const cell = row.getCell(i);
+    cell.font = { bold: true, size: 10 };
+    cell.fill = HEADER_FILL;
+    cell.alignment = { vertical: "middle" };
+  }
+  row.height = 20;
+}
 
-  const ws = wb.addWorksheet("Inventory", {
-    views: [{ state: "frozen", ySplit: 5 }],
+function buildSimpleSheet(ws: ExcelJS.Worksheet, items: InventoryItem[]) {
+  ws.views = [{ state: "frozen", ySplit: 1 }];
+
+  const headerRow = ws.getRow(1);
+  headerRow.getCell(1).value = "Vaccine";
+  headerRow.getCell(2).value = "MRP (₹)";
+  headerRow.getCell(3).value = "Your price (₹)";
+  styleHeaderRow(headerRow, 3);
+
+  items.forEach((item, index) => {
+    const row = ws.getRow(2 + index);
+    row.getCell(1).value = item.name;
+    row.getCell(2).value = item.mrp;
+    row.getCell(3).value = item.price;
   });
 
-  const exportedAt = new Date();
+  ws.getColumn(1).width = 32;
+  ws.getColumn(2).width = 14;
+  ws.getColumn(3).width = 16;
+
+  for (let r = 2; r < 2 + items.length; r++) {
+    ws.getCell(`B${r}`).numFmt = "#,##0.00";
+    ws.getCell(`C${r}`).numFmt = "#,##0.00";
+  }
+}
+
+function buildAdvancedSheet(
+  ws: ExcelJS.Worksheet,
+  items: InventoryItem[],
+  exportedAt: Date,
+  filtered: boolean,
+) {
+  ws.views = [{ state: "frozen", ySplit: 5 }];
+
   let totalUnits = 0;
   let lowCount = 0;
   let outCount = 0;
@@ -90,13 +134,9 @@ export async function exportInventoryToExcel({
 
   const headerRow = ws.getRow(5);
   headers.forEach((label, i) => {
-    const cell = headerRow.getCell(i + 1);
-    cell.value = label;
-    cell.font = { bold: true, size: 10 };
-    cell.fill = HEADER_FILL;
-    cell.alignment = { vertical: "middle" };
+    headerRow.getCell(i + 1).value = label;
   });
-  headerRow.height = 20;
+  styleHeaderRow(headerRow, headers.length);
 
   items.forEach((item, index) => {
     const row = ws.getRow(6 + index);
@@ -128,20 +168,34 @@ export async function exportInventoryToExcel({
     ws.getCell(`E${r}`).numFmt = "#,##0.00";
     ws.getCell(`H${r}`).numFmt = "#,##0";
   }
+}
 
-  const buf = await wb.xlsx.writeBuffer();
-  const blob = new Blob([buf], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
+export interface ExportInventoryExcelOptions {
+  items: InventoryItem[];
+  mode?: InventoryExcelExportMode;
+  /** When true, subtitle notes the export reflects the current search filter. */
+  filtered?: boolean;
+}
+
+export async function exportInventoryToExcel({
+  items,
+  mode = "simple",
+  filtered = false,
+}: ExportInventoryExcelOptions): Promise<void> {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = "Medivax Pharma";
+  wb.created = new Date();
+
+  const ws = wb.addWorksheet("Inventory");
+  const exportedAt = new Date();
   const datePart = exportedAt.toISOString().slice(0, 10);
-  const name = `Medivax_Inventory_${datePart}.xlsx`;
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.rel = "noopener";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+
+  if (mode === "simple") {
+    buildSimpleSheet(ws, items);
+    await downloadWorkbook(wb, `Medivax_Inventory_Simple_${datePart}.xlsx`);
+    return;
+  }
+
+  buildAdvancedSheet(ws, items, exportedAt, filtered);
+  await downloadWorkbook(wb, `Medivax_Inventory_Advanced_${datePart}.xlsx`);
 }

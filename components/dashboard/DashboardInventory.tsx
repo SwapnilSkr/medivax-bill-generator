@@ -11,9 +11,17 @@ import {
   Minus,
   ArrowUpDown,
   FileSpreadsheet,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { InventoryExcelExportMode } from "@/utils/exportInventoryExcel";
 import type { InventoryItem } from "@/types/inventory";
 import { formatInr, getStockLevel } from "@/utils/inventory";
 import { StockLevelBadge } from "@/components/inventory/StockLevelBadge";
@@ -118,7 +126,7 @@ export default function DashboardInventory({
     }
   };
 
-  const handleExportExcel = async () => {
+  const handleExportExcel = async (mode: InventoryExcelExportMode) => {
     if (exporting || filtered.length === 0) return;
     setExporting(true);
     try {
@@ -127,9 +135,15 @@ export default function DashboardInventory({
       );
       await exportInventoryToExcel({
         items: filtered,
+        mode,
         filtered: Boolean(search.trim()),
       });
-      appToast("success", "Inventory exported to Excel.");
+      appToast(
+        "success",
+        mode === "simple"
+          ? "Simple inventory list exported."
+          : "Advanced inventory report exported.",
+      );
     } catch (err) {
       appToast(
         "error",
@@ -220,17 +234,43 @@ export default function DashboardInventory({
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-9 gap-2"
-              disabled={exporting || filtered.length === 0}
-              onClick={() => void handleExportExcel()}
-            >
-              <FileSpreadsheet className="size-4" />
-              {exporting ? "Exporting…" : "Export Excel"}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-2"
+                  disabled={exporting || filtered.length === 0}
+                >
+                  <FileSpreadsheet className="size-4" />
+                  {exporting ? "Exporting…" : "Export Excel"}
+                  <ChevronDown className="size-3.5 opacity-70" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-52">
+                <DropdownMenuItem
+                  onSelect={() => void handleExportExcel("simple")}
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-medium">Simple</span>
+                    <span className="text-xs text-muted-foreground">
+                      Vaccine name, MRP, and your price only
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => void handleExportExcel("advanced")}
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-medium">Advanced</span>
+                    <span className="text-xs text-muted-foreground">
+                      Stock, status, HSN, manufacturer, and more
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button variant="outline" size="sm" asChild className="h-9">
               <Link href="/generate">Use in new invoice</Link>
             </Button>
