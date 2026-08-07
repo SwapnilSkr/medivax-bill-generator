@@ -99,19 +99,27 @@ export default function BillHeader({ billInfo, showGst = true }: BillHeaderProps
                 <span className="font-semibold">Ref Doctor:</span> {billInfo.refDoctor}
               </p>
             )}
+            {billInfo.nameType === "Drug House" && billInfo.dlNo && (
+              <p className="mt-1">
+                <span className="font-semibold">DL No.:</span> {billInfo.dlNo}
+              </p>
+            )}
+            {billInfo.nameType === "Drug House" && billInfo.gstNo && (
+              <p className="mt-1">
+                <span className="font-semibold">GSTIN:</span> {billInfo.gstNo}
+              </p>
+            )}
             <p className="mt-1 wrap-break-word leading-snug text-inherit">
               {billInfo.address || "—"}
             </p>
             <p className="mt-1">
               <span className="font-semibold">Mobile:</span> {billInfo.mobile || "—"}
             </p>
-            {showGst && billInfo.gstNo && (
-              <>
-                <p>
-                  <span className="font-semibold">State Name:</span> {SELLER_STATE},
-                  Code: {STATE_CODE}
-                </p>
-              </>
+            {showGst && (
+              <p>
+                <span className="font-semibold">State Name:</span> {SELLER_STATE},
+                Code: {STATE_CODE}
+              </p>
             )}
           </div>
 

@@ -1,4 +1,5 @@
 import { ItemType, BillInfoType } from "@/types/bill";
+import { SELLER_GSTIN } from "@/lib/invoiceConstants";
 
 /** Round to 2 decimal places (currency). */
 export const round2 = (n: number): number =>
@@ -331,12 +332,33 @@ function freshBillDateTime(): Pick<BillInfoType, "billDate" | "billTime"> {
   };
 }
 
+/** Fill fields added after older bills were saved (e.g. Drug House dlNo). */
+export function normalizeBillInfo(billInfo: BillInfoType): BillInfoType {
+  const nameType =
+    billInfo.nameType === "Doctor" ||
+    billInfo.nameType === "Patient" ||
+    billInfo.nameType === "Drug House"
+      ? billInfo.nameType
+      : "Doctor";
+  // Older drafts stored the seller GSTIN here; that is not consignee GST.
+  const rawGst = billInfo.gstNo ?? "";
+  const gstNo =
+    nameType !== "Drug House" && rawGst === SELLER_GSTIN ? "" : rawGst;
+  return {
+    ...billInfo,
+    nameType,
+    gstNo,
+    dlNo: billInfo.dlNo ?? "",
+    refDoctor: billInfo.refDoctor ?? "",
+  };
+}
+
 /** Customer, lines, and settings copied; bill number cleared for a new invoice. */
 export function cloneBillInfoForDuplicate(
   billInfo: BillInfoType,
 ): BillInfoType {
   return {
-    ...billInfo,
+    ...normalizeBillInfo(billInfo),
     ...freshBillDateTime(),
     billNo: "",
   };

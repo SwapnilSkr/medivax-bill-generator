@@ -69,8 +69,14 @@ function buildBillToBlock(billInfo: BillInfoType, showGst: boolean): string {
   if (billInfo.nameType === "Patient" && billInfo.refDoctor) {
     lines.push(`Ref Doctor: ${billInfo.refDoctor}`);
   }
+  if (billInfo.nameType === "Drug House" && billInfo.dlNo) {
+    lines.push(`DL No.: ${billInfo.dlNo}`);
+  }
+  if (billInfo.nameType === "Drug House" && billInfo.gstNo) {
+    lines.push(`GSTIN: ${billInfo.gstNo}`);
+  }
   lines.push(billInfo.address || "—", `Mobile: ${billInfo.mobile || "—"}`);
-  if (showGst && billInfo.gstNo) {
+  if (showGst) {
     lines.push(`State Name: ${SELLER_STATE}, Code: ${STATE_CODE}`);
   }
   return lines.join("\n");

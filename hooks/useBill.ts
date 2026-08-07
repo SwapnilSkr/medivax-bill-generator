@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback, ChangeEvent } from "react";
 import { BillInfoType, ItemType } from "@/types/bill";
-import { computeLineAmount, createInitialItems, cloneBillInfoForDuplicate, cloneItemsForDuplicate } from "@/utils/bill";
+import {
+  computeLineAmount,
+  createInitialItems,
+  cloneBillInfoForDuplicate,
+  cloneItemsForDuplicate,
+  normalizeBillInfo,
+} from "@/utils/bill";
 import type { BillDocument, DraftDocument } from "@/types/bill";
 import type { InventoryItem } from "@/types/inventory";
 import { inventoryToLineItem } from "@/utils/inventory";
@@ -9,7 +15,8 @@ const defaultBillInfo: BillInfoType = {
   billNo: "",
   billDate: "",
   billTime: "",
-  gstNo: "19HGRPS5830J1ZF",
+  gstNo: "",
+  dlNo: "",
   nameType: "Doctor",
   doctorName: "",
   refDoctor: "",
@@ -129,7 +136,7 @@ export const useBill = () => {
   };
 
   const loadFromDraft = useCallback((draft: DraftDocument) => {
-    setBillInfo(draft.billInfo);
+    setBillInfo(normalizeBillInfo(draft.billInfo));
     setItems(draft.items);
     setOrientation(draft.orientation);
     setIncludeGst(draft.includeGst);
@@ -139,7 +146,7 @@ export const useBill = () => {
   }, []);
 
   const loadFromBill = useCallback((bill: BillDocument) => {
-    setBillInfo(bill.billInfo);
+    setBillInfo(normalizeBillInfo(bill.billInfo));
     setItems(bill.items);
     setOrientation(bill.orientation);
     setIncludeGst(bill.includeGst);

@@ -1,9 +1,14 @@
+export type ConsigneeNameType = "Doctor" | "Patient" | "Drug House";
+
 export interface BillInfoType {
   billNo: string;
   billDate: string;
   billTime: string;
+  /** Consignee GSTIN (used for Drug House customers). */
   gstNo: string;
-  nameType: "Doctor" | "Patient";
+  /** Consignee drug license number (used for Drug House customers). */
+  dlNo: string;
+  nameType: ConsigneeNameType;
   doctorName: string;
   refDoctor: string;
   address: string;

@@ -30,6 +30,7 @@ import {
   computeInventoryDeltas,
   validateInventoryDeltas,
 } from "@/utils/inventory";
+import { normalizeBillInfo } from "@/utils/bill";
 
 export type { BillDocument, DraftDocument };
 
@@ -74,7 +75,7 @@ function parseBillOrDraft(
     return {
       id,
       displayName: data.displayName,
-      billInfo: data.billInfo as BillInfoType,
+      billInfo: normalizeBillInfo(data.billInfo as BillInfoType),
       items: data.items as ItemType[],
       orientation: data.orientation,
       includeGst: data.includeGst,

@@ -78,6 +78,7 @@ export default function BillForm({
           >
             <option value="Doctor">Doctor Name</option>
             <option value="Patient">Patient Name</option>
+            <option value="Drug House">Drug House</option>
           </Select>
         </div>
         <div>
@@ -99,6 +100,28 @@ export default function BillForm({
               onChange={onChange}
             />
           </div>
+        )}
+        {billInfo.nameType === "Drug House" && (
+          <>
+            <div>
+              <label className={labelClass}>DL No.</label>
+              <Input
+                type="text"
+                name="dlNo"
+                value={billInfo.dlNo}
+                onChange={onChange}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>GSTIN</label>
+              <Input
+                type="text"
+                name="gstNo"
+                value={billInfo.gstNo}
+                onChange={onChange}
+              />
+            </div>
+          </>
         )}
         <div className="md:col-span-2">
           <label className={labelClass}>Address</label>
