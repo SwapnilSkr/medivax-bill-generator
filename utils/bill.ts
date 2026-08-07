@@ -1,5 +1,10 @@
-import { ItemType, BillInfoType } from "@/types/bill";
+import { ItemType, BillInfoType, ConsigneeNameType } from "@/types/bill";
 import { SELLER_GSTIN } from "@/lib/invoiceConstants";
+
+/** Label printed on the invoice for the consignee name line. */
+export function consigneeTypeLabel(nameType: ConsigneeNameType): string {
+  return nameType === "Drug House" ? "Customer" : nameType;
+}
 
 /** Round to 2 decimal places (currency). */
 export const round2 = (n: number): number =>

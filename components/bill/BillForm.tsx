@@ -2,6 +2,7 @@ import { ChangeEvent } from "react";
 import { BillInfoType } from "@/types/bill";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { consigneeTypeLabel } from "@/utils/bill";
 
 interface BillFormProps {
   billInfo: BillInfoType;
@@ -78,11 +79,13 @@ export default function BillForm({
           >
             <option value="Doctor">Doctor Name</option>
             <option value="Patient">Patient Name</option>
-            <option value="Drug House">Drug House</option>
+            <option value="Drug House">Customer</option>
           </Select>
         </div>
         <div>
-          <label className={labelClass}>{billInfo.nameType} Name</label>
+          <label className={labelClass}>
+            {consigneeTypeLabel(billInfo.nameType)} Name
+          </label>
           <Input
             type="text"
             name="doctorName"

@@ -13,6 +13,7 @@ import {
   calculateGstBreakdown,
   calculateTotal,
   calculateTotalItems,
+  consigneeTypeLabel,
   getActiveItemCount,
   numberToWords,
   round2,
@@ -64,7 +65,7 @@ function buildSellerBlock(showGst: boolean, billEmail: string): string {
 function buildBillToBlock(billInfo: BillInfoType, showGst: boolean): string {
   const lines = [
     "Bill to (Consignee)",
-    `${billInfo.nameType}: ${billInfo.doctorName || "—"}`,
+    `${consigneeTypeLabel(billInfo.nameType)}: ${billInfo.doctorName || "—"}`,
   ];
   if (billInfo.nameType === "Patient" && billInfo.refDoctor) {
     lines.push(`Ref Doctor: ${billInfo.refDoctor}`);

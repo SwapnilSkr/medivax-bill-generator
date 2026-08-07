@@ -10,6 +10,7 @@ import {
   SELLER_STATE,
   STATE_CODE,
 } from "@/lib/invoiceConstants";
+import { consigneeTypeLabel } from "@/utils/bill";
 
 interface BillHeaderProps {
   billInfo: BillInfoType;
@@ -92,7 +93,7 @@ export default function BillHeader({ billInfo, showGst = true }: BillHeaderProps
               Bill to (Consignee)
             </p>
             <p className="font-semibold text-[1.05em] leading-tight">
-              {billInfo.nameType}: {billInfo.doctorName || "—"}
+              {consigneeTypeLabel(billInfo.nameType)}: {billInfo.doctorName || "—"}
             </p>
             {billInfo.nameType === "Patient" && billInfo.refDoctor && (
               <p className="mt-1">
