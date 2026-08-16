@@ -164,7 +164,7 @@ export async function exportBillToCsv(params: {
   const lines: string[] = [];
   const push = (cells: (string | number)[]) => lines.push(rowToLine(row(cells)));
 
-  lines.push(rowToLine(centeredTitleRow("TAX INVOICE")));
+  lines.push(rowToLine(centeredTitleRow(showGst ? "TAX INVOICE" : "BILL")));
   lines.push(rowToLine(centeredTitleRow("Computer generated — medivax pharma")));
 
   const sellerText = buildSellerBlock(showGst, billInfo.email);

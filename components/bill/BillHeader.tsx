@@ -21,6 +21,8 @@ const cell =
   "border-b border-slate-800 md:border-b-0 md:border-r md:last:border-r-0 print:border-b-0 print:border-r print:last:border-r-0 border-slate-800 p-1.5 leading-snug align-top text-slate-900";
 
 export default function BillHeader({ billInfo, showGst = true }: BillHeaderProps) {
+  const documentTitle = showGst ? "Tax Invoice" : "Bill";
+
   const metaRow = (label: string, value: string) => (
     <tr className="border-b border-slate-800 last:border-b-0">
       <td className="w-[42%] border-r border-slate-800 bg-slate-50/80 px-1 py-1 font-semibold text-[0.95em] uppercase tracking-wide text-slate-700">
@@ -37,7 +39,7 @@ export default function BillHeader({ billInfo, showGst = true }: BillHeaderProps
       <div className="flex flex-col items-stretch">
         <div className="border-b-2 border-slate-900 px-2 py-1.5 text-center">
           <h1 className="text-[1.35em] font-bold uppercase tracking-[0.12em] text-slate-900 leading-tight">
-            Tax Invoice
+            {documentTitle}
           </h1>
           <p className="mt-0.5 text-[0.95em] text-slate-600">
             Computer generated — medivax pharma

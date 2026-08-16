@@ -184,7 +184,7 @@ export async function exportBillToExcel(params: {
 
   const wb = new ExcelJS.Workbook();
   wb.creator = "Medivax Bill Generator";
-  const ws = wb.addWorksheet("Tax Invoice", {
+  const ws = wb.addWorksheet(showGst ? "Tax Invoice" : "Bill", {
     pageSetup: {
       paperSize: 9,
       orientation: "portrait",
@@ -204,7 +204,7 @@ export async function exportBillToExcel(params: {
 
   ws.mergeCells(`A${r}:${sheetEndCol}${r}`);
   const t1 = ws.getCell(`A${r}`);
-  t1.value = "TAX INVOICE";
+  t1.value = showGst ? "TAX INVOICE" : "BILL";
   t1.font = { bold: true, size: 14 };
   t1.alignment = { horizontal: "center", vertical: "middle" };
   applyBorder(t1);
