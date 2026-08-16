@@ -21,7 +21,7 @@ const cell =
   "border-b border-slate-800 md:border-b-0 md:border-r md:last:border-r-0 print:border-b-0 print:border-r print:last:border-r-0 border-slate-800 p-1.5 leading-snug align-top text-slate-900";
 
 export default function BillHeader({ billInfo, showGst = true }: BillHeaderProps) {
-  const documentTitle = showGst ? "Tax Invoice" : "Bill";
+  const documentTitle = showGst ? "Tax Invoice" : "Bill Invoice";
 
   const metaRow = (label: string, value: string) => (
     <tr className="border-b border-slate-800 last:border-b-0">
