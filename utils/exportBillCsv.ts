@@ -7,6 +7,8 @@ import {
   SELLER_MOBILE,
   SELLER_STATE,
   STATE_CODE,
+  gstInvoiceBankBlockLines,
+  KOTAK_BANK_ONELINER,
 } from "@/lib/invoiceConstants";
 import {
   amountInWordsInr,
@@ -365,17 +367,7 @@ export async function exportBillToCsv(params: {
       "Subject to Kolkata jurisdiction",
       "Please consult your doctor before using medicines. Cold chain items once sold cannot be taken back for technical reasons.",
     ];
-    const bankLines = [
-      "COMPANY'S BANK DETAILS",
-      "A/c holder: Medivax Pharma",
-      "Bank: Kotak Mahindra Bank",
-      "A/c no.: 9314146480",
-      "Branch & IFSC: Park Street, Kolkata — KKBK0000322",
-      "",
-      "For Medivax Pharma",
-      "",
-      "Authorised signatory",
-    ];
+    const bankLines = gstInvoiceBankBlockLines();
     const declBankRows = Math.max(declLines.length, bankLines.length);
     for (let i = 0; i < declBankRows; i++) {
       const dr = emptyRow();
@@ -395,7 +387,7 @@ export async function exportBillToCsv(params: {
       "For Medivax Pharma",
       "E. & O. E.",
       "",
-      "Kotak Mahindra Bank, A/c no. 9314146480, IFSC KKBK0000322, Park Street, Kolkata — 700016",
+      KOTAK_BANK_ONELINER,
     ];
     for (const pl of plainFootLines) {
       lines.push(rowToLine(pl ? fullWidthRow(pl) : emptyRow()));

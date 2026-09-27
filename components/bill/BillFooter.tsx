@@ -1,5 +1,9 @@
 import { ItemType } from "@/types/bill";
 import {
+  GST_INVOICE_BANK,
+  KOTAK_BANK_ONELINER,
+} from "@/lib/invoiceConstants";
+import {
   amountInWordsInr,
   calculateTotal,
   GstBreakdown,
@@ -127,17 +131,24 @@ export default function BillFooter({ items, showGst = true, gst }: BillFooterPro
           <div className="p-2">
             <p className="font-bold uppercase">Company&apos;s bank details</p>
             <p className="mt-1">
-              <span className="font-semibold">A/c holder:</span> Medivax Pharma
+              <span className="font-semibold">Account Name:</span>{" "}
+              {GST_INVOICE_BANK.accountName}
             </p>
             <p>
-              <span className="font-semibold">Bank:</span> Kotak Mahindra Bank
+              <span className="font-semibold">Account Number:</span>{" "}
+              {GST_INVOICE_BANK.accountNumber}
             </p>
             <p>
-              <span className="font-semibold">A/c no.:</span> 9314146480
+              <span className="font-semibold">IFSC Code:</span>{" "}
+              {GST_INVOICE_BANK.ifsc}
             </p>
             <p>
-              <span className="font-semibold">Branch &amp; IFSC:</span> Park
-              Street, Kolkata — KKBK0000322
+              <span className="font-semibold">Branch:</span>{" "}
+              {GST_INVOICE_BANK.branch}
+            </p>
+            <p>
+              <span className="font-semibold">Branch Address:</span>{" "}
+              {GST_INVOICE_BANK.branchAddress}
             </p>
             <div className="mt-4 text-right">
               <p className="font-semibold">For Medivax Pharma</p>
@@ -169,10 +180,7 @@ export default function BillFooter({ items, showGst = true, gst }: BillFooterPro
         <p>For Medivax Pharma</p>
         <p>E. &amp; O. E.</p>
       </div>
-      <p className="mt-1">
-        Kotak Mahindra Bank, A/c no. 9314146480, IFSC KKBK0000322, Park Street,
-        Kolkata — 700016
-      </p>
+      <p className="mt-1">{KOTAK_BANK_ONELINER}</p>
     </div>
   );
 }

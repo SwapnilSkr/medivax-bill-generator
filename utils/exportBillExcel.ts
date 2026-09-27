@@ -8,6 +8,8 @@ import {
   SELLER_MOBILE,
   SELLER_STATE,
   STATE_CODE,
+  gstInvoiceBankBlockLines,
+  KOTAK_BANK_ONELINER,
 } from "@/lib/invoiceConstants";
 import {
   amountInWordsInr,
@@ -603,17 +605,7 @@ export async function exportBillToExcel(params: {
 
     ws.mergeCells(`G${r}:${sheetEndCol}${declEnd}`);
     const bank = ws.getCell(`G${r}`);
-    bank.value = [
-      "COMPANY'S BANK DETAILS",
-      "A/c holder: Medivax Pharma",
-      "Bank: Kotak Mahindra Bank",
-      "A/c no.: 9314146480",
-      "Branch & IFSC: Park Street, Kolkata — KKBK0000322",
-      "",
-      "For Medivax Pharma",
-      "",
-      "Authorised signatory",
-    ].join("\n");
+    bank.value = gstInvoiceBankBlockLines().join("\n");
     bank.alignment = { wrapText: true, vertical: "top" };
     bank.font = { size: 10 };
     applyBorder(bank);
@@ -650,7 +642,7 @@ export async function exportBillToExcel(params: {
       "For Medivax Pharma",
       "E. & O. E.",
       "",
-      "Kotak Mahindra Bank, A/c no. 9314146480, IFSC KKBK0000322, Park Street, Kolkata — 700016",
+      KOTAK_BANK_ONELINER,
     ].join("\n");
     plainFoot.alignment = { wrapText: true, vertical: "top" };
     plainFoot.font = { size: 10 };
